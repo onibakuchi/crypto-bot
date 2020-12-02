@@ -1,8 +1,4 @@
 import CCXT from 'ccxt';
-import { resolve } from 'path';
-import { once } from 'process';
-import { EnumDeclaration } from 'typescript';
-
 const event = {
     event: '',
     method: '',
