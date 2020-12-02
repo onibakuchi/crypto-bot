@@ -1,7 +1,4 @@
 import CCXT from 'ccxt';
-import { resolve } from 'path';
-import { once } from 'process';
-import { EnumDeclaration } from 'typescript';
 
 const event = {
     event: '',
@@ -180,8 +177,8 @@ interface DataStore {
     uncontractedOrders
     contractedOrders
     openedOrder
-    status: 'Contracted' | 'PartialContracted' | 'OpenOrder' | 'Await' | 'Error'
-    getStatus(): 'Contracted' | 'PartialContracted' | 'OpenOrder' | 'Await' | 'Error'
+    status: 'Contracted' | 'OpenOrder' | 'Await' | 'Error'
+    getStatus(): 'Contracted' | 'OpenOrder' | 'Await' | 'Error'
     setStatus(status): void
     setPreparedOrder(order): void
     getPreparedOrder(): void
@@ -200,15 +197,17 @@ abstract class AbstractStrategy {
     public strategy(): void {
         const status = this.datastore.getStatus()
         if (status == 'Contracted') {
+            if (1) return this.pyramiding();
             return this.exit()
         }
         if (status == 'OpenOrder') return this.strategyWhenOrderOpen()
-        if (status == 'Await' || status == 'PartialContracted') return this.entry()
+        if (status == 'Await') return this.entry()
         if (status == 'Error') return
     }
     public entry() { }
     public exit() { }
     public strategyWhenOrderOpen() { }
+    public pyramiding() { }
     public strategyWhenContracted() { }
 }
 class Strategy extends AbstractStrategy {
