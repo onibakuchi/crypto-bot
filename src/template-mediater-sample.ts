@@ -1,5 +1,21 @@
 import CCXT from 'ccxt';
 
+const event = {
+    event: '',
+    method: '',
+    res: {},
+}
+const states = {
+    fetchOHLCV: 'setPositionStatus',
+    setPositionStatus: 'prepareOrder',
+    openOrder: 'end',
+    events: [
+        { state: 'fetchOHLCV', to: 'setPositionStatus' },
+        { state: 'setPositionStatus', to: 'prepareOrder' },
+        { state: 'openOrder', to: 'end' },
+    ]
+}
+const transite = state => states[state]
 interface Mediator {
     notify(sender: object, event: string): void;
     // notifSignal: { success: Boolean, method: String, result: any, }
@@ -15,13 +31,7 @@ abstract class BaseComponentBot {
         this.mediator = mediator;
     }
 }
-/**
- * The Abstract Class defines a template method that contains a skeleton of some
- * algorithm, composed of calls to (usually) abstract primitive operations.
- *
- * Concrete subclasses should implement these operations, but leave the template
- * method itself intact.
- */
+
 abstract class AbstractClassExchange extends BaseComponentBot {
     protected CCXT: CCXT.Exchange;
     protected abstract exchangeId: string;
@@ -29,23 +39,10 @@ abstract class AbstractClassExchange extends BaseComponentBot {
         super(mediator);
         this.setCCXT();
     }
-    /**
-     * The template method defines the skeleton of an algorithm.
-     */
-    // public templateMethod(): void {
-    //     this.fetchOHLCV();
-    //     this.baseOperation2();
-    //     this.hook1();
-    //     this.requiredOperation2();
-    //     this.hook2();
-    // }
     private setCCXT(): void {
         // ({ "apikey": APIKEY, "apisecret": APISECRET } = config[exchangeId.toUpperCase()]);
         this.CCXT = new CCXT[this.exchangeId]({})
     }
-    /**
-     * These operations already have implementations.
-     */
     public fetchOHLCV(symbol, timeframe, since, limit, params): void {
         console.log('AbstractClassExchange says: I am doing the bulk of the work');
         try {
@@ -122,19 +119,77 @@ function bot(abstractClass: AbstractClassExchange) {
 class ConcreteMediator2 implements Mediator {
     private component1: AbstractClassExchange;
     private component2: AbstractClassExchange;
-
+    private strategies: AbstractStrategy[] = [];
+    private dataStore: DataStore
+    private uncontractedOrders = [{ symbol: '', side: '', amount: 1, open_price: 2, }];
+    private ohlcv;
+    private contractedOrders = [{ symbol: '', side: '', amount: 1, ave_open_price: 2, }]
     constructor() {
         this.component1.setMediator(this);
         this.component2.setMediator(this);
     }
 
-    public notify(sender: object, event: string): void { }
+    public notify(sender: object, event: string): void {
+
+    }
     public setComponent(comp: AbstractClassExchange): void { }
-    public setOHLCV() { }
-    public setPositionStatus() { }
+    public setStrategy(_strategies: AbstractStrategy[]): void {
+        this.strategies.push(new AbstractStrategy())
+     }
+    private setOHLCV() { }
+    private setPositionStatus() { }
+    public main() {
+        this.hook()
+        this.exeStrategy()
+    }
+    private exeStrategy() {
+
+        for (const strategy of this.strategies) {
+            const order = strategy.strategy()
+            this.dataStore.storePreparedOrder(order)
+        }
+    }
+    private hook() {
+        this.setOHLCV();
+        this.setPositionStatus();
+    }
     public openOrder() { }
     public closeOrder() { }
-    public prepareOrder() { }
+    protected update() { }
+}
+
+interface DataStore {
+    ohlcv
+    uncontractedOrders
+    contractedOrders
+    storePreparedOrder(order): void
+}
+abstract class AbstractStrategy {
+    protected abstract exchangeapi: AbstractClassExchange;
+    public setExchangeapi(comp): void { }
+    public strategy(): void { }
+    public entry() { }
+    public exit() { }
+    public strategyWhenOrderOpen() { }
+    public strategyWhenContracted() { }
+
+}
+class Strategy extends AbstractStrategy {
+    protected exchangeapi
+    constructor(comp) {
+        super();
+        this.exchangeapi = comp
+    }
+    public setExchangeapi(comp) {
+        this.exchangeapi = comp
+    }
+    public strategy() {
+
+    }
+    public entry() { }
+    public exit() { }
+    public strategyWhenOrderOpen() { }
+    public strategyWhenContracted() { }
 
 }
 

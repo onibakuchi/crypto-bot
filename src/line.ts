@@ -1,4 +1,4 @@
-import { AxiosStatic } from 'axios';
+import axiosBase from 'axios';
 import CONFIG from './config';
 
 export interface Message {
@@ -6,7 +6,7 @@ export interface Message {
     text: string;
 }
 
-export const pushMessage = async (axiosBase: AxiosStatic, message: Message[], to = undefined) => {
+export const pushMessage = async (message: Message[], to = undefined) => {
     try {
         console.log('[Info]:Fired Line Notification');
         await axiosBase({
