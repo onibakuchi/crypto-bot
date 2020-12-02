@@ -1,7 +1,5 @@
-import TEST_CONFIG from '../config.test.json';
-
 let CONFIG;
- export default CONFIG = process.env.NODE_ENV != 'production' ? TEST_CONFIG : {
+ export default CONFIG = {
     "BITBANK": {
         "APIKEY": process.env.BB_APIKEY,
         "APISECRET": process.env.BB_APISECRET
