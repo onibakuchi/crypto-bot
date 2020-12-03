@@ -8,17 +8,24 @@ export interface DataStoreInterface {
     openedOrder
     status: Status
     getStatus(): Status
+    
+    getOHCV()
     getPreparedOrder()
-    getOpenedOrder()
-    getPosition(order)
+    getActiveOrder()
+    getExpiredOrder(): any
+    getContractedOrder(): any
+    pendingOrderCounts()
+    
+    deleteActiveOrder(ord: any);
+
+    setActiveOrder(oder): void //preparedからのぞいてActiveにする
     setPreparedOrder(order): void
-    setStatus(status): void
-    setOpenedOrder(oder): void
-    setContractedOrder(oder): void
-    // getUncontractedOrder(): void
-    setPosition(order): void
     setExpiredOrder(): void
-    getExpiredOrder(): any[]
+
+    getPosition(order)
+    setStatus(status): void
+    setContractedOrder(oder): void
+    setPosition(order): void
 }
 
 class DataStore implements DataStoreInterface {
@@ -38,26 +45,25 @@ class DataStore implements DataStoreInterface {
         this.preparedOrders.push(order)
         if (this.preparedOrders.length == 0) this.setStatus('Await')
     }
-    getPreparedOrder() { }
-    setOpenedOrder(order): void {
+    setActiveOrder(order): void {
         this.openedOrder.push(order);
         if (this.openedOrder.length >= 1) this.setStatus('ActiveOrder')
     }
-    getOpenedOrder() { }
-    setUncontractedOrder(order): void { }
-    getUncontractedOrder() { }
+    getActiveOrder() { }
     setContractedOrder(order): void {
         this.positions.push(order)
         if (this.positions.length >= 1) this.setStatus('Position')
     }
-    // getContractedOrder() { }
+    getContractedOrder() { }
+    getPreparedOrder() { }
     setExpiredOrder() { }
     getExpiredOrder() { }
-    setPosition(order) {
-
-    }
+    getOHCV() { }
+    setPosition(order) { }
+    pendingOrderCounts() { }
     getPosition() {
         // ave_open_price
     }
+
 
 }
