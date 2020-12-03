@@ -7,16 +7,26 @@ abstract class AbstractStrategy {
     public setExchangeapi(comp): void { }
     public setDataStore(comp): void { }
     public strategy(): void {
-        const status = this.datastore.getStatus()
-        if (status == 'Position') {
-            return this.exit()
+        // const status = this.datastore.getStatus()
+        // if (status == 'Position') {
+        //     return
+        // }
+        // if (status == 'ActiveOrder') return this.strategyWhenOrderOpen()
+        // if (status == 'Await') return
+        // if (status == 'Error') return
+        let orders2;
+        let orders = this.algorithym()
+        // Pyraminging 数>1のとき
+        if (1) { orders = [] }
+        // ポジションを持ってる時
+        if (1) {
+            orders2 = this.hookWhenContracted()
         }
-        if (status == 'ActiveOrder') return this.strategyWhenOrderOpen()
-        if (status == 'Await') return this.entry()
-        if (status == 'Error') return
+        return { order, orders2 }
     }
-    public entry() { }
+    protected algorithym() { }
     public exit() { }
+    public hookWhenContracted() { }
     public strategyWhenOrderOpen() { }
     public strategyWhenContracted() { }
 }
@@ -32,8 +42,30 @@ export class Strategy extends AbstractStrategy {
         this.exchangeapi = comp
     }
     public setDataStore(comp): void { }
-    public entry() { }
-    public exit() { }
+    public calculation() {
+    }
+    public exit() {
+        //Reduce Only
+        const orders = [];
+        return orders
+    }
+    public strategyWhenNoPosition() { }
+    protected algorithym() {
+        //  Non Reduce Only
+        const order = {
+            symbol: '',
+            side: '',
+            ordType: '',
+            price: '',
+            params: {},
+            expiracy: 10,
+        }
+        this.setQuantity()
+        this.setPrice();
+    }
+    public hookWhenContracted() { }
+    protected setQuantity() { }
+    protected setPrice() { }
     public strategyWhenOrderOpen() { }
     public strategyWhenContracted() { }
 }

@@ -11,13 +11,14 @@ export interface DataStoreInterface {
     getPreparedOrder()
     getOpenedOrder()
     getPosition(order)
-
     setPreparedOrder(order): void
     setStatus(status): void
     setOpenedOrder(oder): void
     setContractedOrder(oder): void
     // getUncontractedOrder(): void
     setPosition(order): void
+    setExpiredOrder(): void
+    getExpiredOrder(): any[]
 }
 
 class DataStore implements DataStoreInterface {
@@ -26,6 +27,8 @@ class DataStore implements DataStoreInterface {
     public uncontractedOrders = [];
     public contractedOrders = [];
     public openedOrder = [];
+    public expiredOrder = [];
+
     public status;
     public positions = [{}]
 
@@ -48,11 +51,13 @@ class DataStore implements DataStoreInterface {
         if (this.positions.length >= 1) this.setStatus('Position')
     }
     // getContractedOrder() { }
-
+    setExpiredOrder() { }
+    getExpiredOrder() { }
     setPosition(order) {
-        this.positions.push(order)
-        if (this.positions.length >= 1) this.setStatus('Position')
+
     }
-    getPosition() { }
+    getPosition() {
+        // ave_open_price
+    }
 
 }

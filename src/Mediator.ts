@@ -34,6 +34,8 @@ export class ConcreteMediator2 implements Mediator {
     public main() {
         this.hook()
         this.exeStrategy()
+        this.order()
+        this.cancel()
     }
     private exeStrategy() {
         for (const strategy of this.strategies) {
@@ -44,12 +46,22 @@ export class ConcreteMediator2 implements Mediator {
     private hook() {
         this.setOHLCV();
         this.setPositionStatus();
+
+        const ohlcv = this.exchangeapi.fetchOHLCV('USD', '1h', 1, 1, 1)
+        this.dataStore.ohlcv = ohlcv;
     }
     public async order() {
         const orders = this.dataStore.getPreparedOrder()
         for (const orderObj of orders) {
             const promise = new Promise((resolve) => setTimeout(resolve, 1000))
             promise.then(() => this.exchangeapi.createOrder())
+        }
+    }
+    public async cancel() {
+        const expiredOrders = this.dataStore.getExpiredOrder()
+        for (const orderObj of expiredOrders) {
+            const promise = new Promise((resolve) => setTimeout(resolve, 1000))
+            promise.then(() => this.exchangeapi.cancelOrder())
         }
     }
     public update(status) {
