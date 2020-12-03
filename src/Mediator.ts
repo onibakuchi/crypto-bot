@@ -4,7 +4,7 @@ import { DataStoreInterface } from './DataStore';
 
 export interface Mediator {
     notify(sender: object, event: string): void;
-    // notifSignal: { success: Boolean, method: String, result: any, }
+    dataStoreMethods(methodName): any
 }
 
 export class ConcreteMediator2 implements Mediator {
@@ -16,24 +16,23 @@ export class ConcreteMediator2 implements Mediator {
         this.exchangeapi.setMediator(this);
         this.component2.setMediator(this);
     }
-    public notify(sender: object, event: string): void {
-
-    }
+    public notify(sender: object, event: string): void { }
     public dataStoreMethods(methodName) {
         const methods = {
-            getOHLCV: this.dataStore.getOHCV,
+            ohlcv: this.dataStore.getOHCV,
             pendingOrderCount: this.dataStore.pendingOrderCount,
-            getPreParedOrder: this.dataStore.getPreparedOrder,
-            getActiveOrder: this.dataStore.getActiveOrder
+            preParedOrder: this.dataStore.getPreparedOrder,
+            activeOrder: this.dataStore.getActiveOrder
         }
         return methods[methodName]
     }
     public setComponent(comp: AbstractClassExchange): void { }
     public setStrategy(_strategies: Strategy[]): void {
-        this.strategies.push(new Strategy(this.exchangeapi, this.dataStore))
+        this.strategies.push(new Strategy(this))
     }
     public main() {
-        this.hook()
+        this.setOHLCV();
+        this.updateActiveOrder();
         this.exeStrategy()
         this.order()
         this.cancel()
@@ -42,13 +41,9 @@ export class ConcreteMediator2 implements Mediator {
         const ohlcv = this.exchangeapi.fetchOHLCV('USD', '1h', 1, 1, 1)
         this.dataStore.ohlcv = ohlcv;
     }
-    private setPositionStatus() {
-        const order = this.exchangeapi.fetfhActiveOrder()
+    private updateActiveOrder() {
+        const order = this.exchangeapi.fetchActiveOrder()
         this.dataStore.setActiveOrder(order);
-    }
-    private hook() {
-        this.setOHLCV();
-        this.setPositionStatus();
     }
     private exeStrategy() {
         for (const strategy of this.strategies) {
@@ -63,7 +58,6 @@ export class ConcreteMediator2 implements Mediator {
             try {
                 promise.then(() => this.exchangeapi.createOrder())
                 await this.exchangeapi.createOrder();
-                // this.dataStore.setActiveOrder()
                 this.dataStore.setActiveOrder(ord)
             } catch (e) {
 
@@ -81,7 +75,6 @@ export class ConcreteMediator2 implements Mediator {
             } catch (e) {
 
             }
-
         }
     }
 }

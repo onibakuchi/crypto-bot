@@ -12,7 +12,7 @@ export abstract class BaseComponentBot {
 }
 
 export abstract class AbstractClassExchange extends BaseComponentBot {
-    fetfhActiveOrder() {
+    fetchActiveOrder() {
         throw new Error('Method not implemented.');
     }
     fetchContractedOrder() {
