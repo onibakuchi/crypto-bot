@@ -19,6 +19,15 @@ export class ConcreteMediator2 implements Mediator {
     public notify(sender: object, event: string): void {
 
     }
+    public dataStoreMethods(methodName) {
+        const methods = {
+            getOHLCV: this.dataStore.getOHCV,
+            pendingOrderCount: this.dataStore.pendingOrderCount,
+            getPreParedOrder: this.dataStore.getPreparedOrder,
+            getActiveOrder: this.dataStore.getActiveOrder
+        }
+        return methods[methodName]
+    }
     public setComponent(comp: AbstractClassExchange): void { }
     public setStrategy(_strategies: Strategy[]): void {
         this.strategies.push(new Strategy(this.exchangeapi, this.dataStore))

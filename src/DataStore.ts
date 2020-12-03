@@ -14,7 +14,7 @@ export interface DataStoreInterface {
     getActiveOrder()
     getExpiredOrder(): any
     getContractedOrder(): any
-    pendingOrderCounts()
+    pendingOrderCount()
     
     deleteActiveOrder(ord: any);
 
@@ -60,7 +60,7 @@ class DataStore implements DataStoreInterface {
     getExpiredOrder() { }
     getOHCV() { }
     setPosition(order) { }
-    pendingOrderCounts() { }
+    pendingOrderCount() { }
     getPosition() {
         // ave_open_price
     }

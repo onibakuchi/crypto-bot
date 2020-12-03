@@ -7,15 +7,8 @@ abstract class AbstractStrategy {
     // public setExchangeapi(comp): void { }
     public setDataStore(comp): void { }
     public strategy(): void {
-        // const status = this.datastore.getStatus()
-        // if (status == 'Position') {
-        //     return
-        // }
-        // if (status == 'ActiveOrder') return this.strategyWhenOrderOpen()
-        // if (status == 'Await') return
-        // if (status == 'Error') return
         let orders2;
-        const acticeOrder = this.datastore.getActiveOrder();
+        const acticeOrder = this.datastore.pendingOrderCount();
         if (acticeOrder.length < 1) {
             let orders = this.algorithym()
         }
@@ -25,7 +18,6 @@ abstract class AbstractStrategy {
         if (1) {
             orders2 = this.hookWhenContracted()
         }
-        return { order, orders2 }
     }
     protected algorithym() { }
     public exit() { }
@@ -45,6 +37,39 @@ export class Strategy extends AbstractStrategy {
     //     this.exchangeapi = comp
     // }
     public setDataStore(comp): void { }
+    public exit() {
+        //Reduce Only
+        const orders = [];
+        return orders
+    }
+    protected algorithym() {
+        //  Non Reduce Only
+        const order = {
+            symbol: '',
+            side: '',
+            ordType: '',
+            price: '',
+            params: {},
+            expiracy: 10,
+        }
+        const amounts = this.setAmounts()
+        const prices = this.setPrices();
+        return order;
+    }
+    public hookWhenContracted() { }
+    protected setAmounts() { }
+    protected setPrices() { }
+    public strategyWhenNoPosition() { }
+    public strategyWhenOrderOpen() { }
+    public strategyWhenContracted() { }
+}
+
+export class Strategy2 extends AbstractStrategy {
+    protected mediator: Mediator
+    constructor(comp) {
+        super();
+        this.mediator = comp
+    }
     public exit() {
         //Reduce Only
         const orders = [];
