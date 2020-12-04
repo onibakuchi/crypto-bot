@@ -5,15 +5,14 @@ abstract class AbstractStrategy {
     public strategy(): void {
         let orders2;
         const counts = this.mediator.dataStoreMethods('pendingCounts')
-        if (counts < 1) {
-            let orders = this.algorithym()
-        }
-        // Pyraminging 数>1のとき
-        if (1) { orders = [] }
-        // ポジションを持ってる時
+        if (counts >= 3) return;
+        let orders = this.algorithym()
+        // すでに約定していてポジションを持っている時かつPyraminging 数>1のとき
         if (1) {
-            orders2 = this.hookWhenContracted()
+            orders2.push({})
         }
+        // this.mediator.dataStoreMethods('order')(orders2)
+        return orders2
     }
     protected algorithym() { }
     public exit() { }
@@ -33,6 +32,7 @@ export class Strategy extends AbstractStrategy {
     protected algorithym() {
         //  Non Reduce Only
         const order = {
+            orderName: '',
             id: 0,
             symbol: '',
             side: '',

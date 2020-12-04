@@ -10,7 +10,7 @@ export interface Mediator {
 export class ConcreteMediator2 implements Mediator {
     private exchangeapi: AbstractClassExchange;
     private component2: AbstractClassExchange;
-    private strategies: Strategy[] = [];
+    private strategies: Strategy[];
     private dataStore: DataStoreInterface
     constructor() {
         this.exchangeapi.setMediator(this);
@@ -21,14 +21,16 @@ export class ConcreteMediator2 implements Mediator {
         const methods = {
             ohlcv: this.dataStore.getOHCV,
             pendingOrderCount: this.dataStore.pendingOrderCount,
-            preParedOrder: this.dataStore.getPreparedOrder,
-            activeOrder: this.dataStore.getActiveOrder
+            preparedOrder: this.dataStore.getPreparedOrders,
+            activeOrder: this.dataStore.getActiveOrders,
+            order: this.dataStore.setPreparedOrders,
         }
         return methods[methodName]
     }
     public setComponent(comp: AbstractClassExchange): void { }
-    public setStrategy(_strategies: Strategy[]): void {
-        this.strategies.push(new Strategy(this))
+    public setStrategy(_strategies: typeof Strategy[]): void {
+        // this.strategies.push(new _strategies[2](this))
+        _strategies.forEach(el => this.strategies.push(new el(this)));
     }
     public main() {
         this.setOHLCV();
@@ -39,42 +41,64 @@ export class ConcreteMediator2 implements Mediator {
     }
     private setOHLCV() {
         const ohlcv = this.exchangeapi.fetchOHLCV('USD', '1h', 1, 1, 1)
-        this.dataStore.ohlcv = ohlcv;
+        this.dataStore.setOHLCV(ohlcv);
     }
     private updateActiveOrder() {
-        const order = this.exchangeapi.fetchActiveOrder()
-        this.dataStore.setActiveOrder(order);
+        const orders = this.exchangeapi.fetchActiveOrders()
+        this.dataStore.setActiveOrders(orders);
     }
     private exeStrategy() {
         for (const strategy of this.strategies) {
-            const order = strategy.strategy()
-            this.dataStore.setPreparedOrder(order)
+            const orders = strategy.strategy()
+            this.dataStore.setPreparedOrders(orders)
         }
     }
     public async order() {
-        const orders = this.dataStore.getPreparedOrder()
+        const orders = this.dataStore.getPreparedOrders()
         for (const ord of orders) {
             const promise = new Promise((resolve) => setTimeout(resolve, 1000))
             try {
                 promise.then(() => this.exchangeapi.createOrder())
                 await this.exchangeapi.createOrder();
-                this.dataStore.setActiveOrder(ord)
+                this.dataStore.setActiveOrders(ord)
             } catch (e) {
 
             }
         }
     }
     public async cancel() {
-        const expiredOrders = this.dataStore.getExpiredOrder()
-        for (const ord of expiredOrders) {
+        const expiredOrders = this.dataStore.getExpiredOrders()
+        // Mediator側で複数のオーダーを一個ずつイテレートする
+        for (const order of expiredOrders) {
             try {
-                const promise = new Promise((resolve) => setTimeout(resolve, 1000))
-                promise.then(() => this.exchangeapi.cancelOrder())
-                // this.dataStore.setActiveOrder()
-                this.dataStore.deleteActiveOrder(ord)
+                await new Promise((resolve) => setTimeout(resolve, 1000))
+                const canceledOrders = await this.exchangeapi.cancelOrder(order)
             } catch (e) {
-
+                
             }
         }
+        this.dataStore.deleteActiveOrders(key, canceledOrders)
+        // cancelOrdersはexchangeapi側で複数オーダーをイテレートするように委任する
+        try {
+            const canceledOrders = await this.exchangeapi.cancelOrders(expiredOrders)
+            // this.dataStore.setActiveOrder()
+            this.dataStore.deleteActiveOrders(key, canceledOrders)
+        } catch (e) {
+
+        }
+
+        // try {
+        //     // await new Promise((resolve) => setTimeout(resolve, 1000))
+        //     const expiredOrders = this.dataStore.getExpiredOrders()
+        //     //**cancelOrderがasyncジェネレーターである必要がある***
+        //     for await (const canceledOrdKey of this.exchangeapi.cancelOrders(expiredOrders)) {
+        //         if (canceledOrdKey) {
+        //             this.dataStore.deleteActiveOrders(canceledOrdKey,{})
+        //         }
+        //     }
+        //     // this.dataStore.setActiveOrder()
+        // } catch (e) {
+
+        // }
     }
 }
