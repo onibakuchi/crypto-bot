@@ -55,12 +55,11 @@ export class ConcreteMediator2 implements Mediator {
     }
     public async order() {
         const orders = this.dataStore.getPreparedOrders()
-        for (const ord of orders) {
-            const promise = new Promise((resolve) => setTimeout(resolve, 1000))
+        for (const order of orders) {
             try {
-                promise.then(() => this.exchangeapi.createOrder())
+                await new Promise((resolve) => setTimeout(resolve, 1000))
                 await this.exchangeapi.createOrder();
-                this.dataStore.setActiveOrders(ord)
+                this.dataStore.setActiveOrders(order)
             } catch (e) {
 
             }
@@ -69,23 +68,23 @@ export class ConcreteMediator2 implements Mediator {
     public async cancel() {
         const expiredOrders = this.dataStore.getExpiredOrders()
         // Mediator側で複数のオーダーを一個ずつイテレートする
+        const canceled = []
         for (const order of expiredOrders) {
             try {
                 await new Promise((resolve) => setTimeout(resolve, 1000))
-                const canceledOrders = await this.exchangeapi.cancelOrder(order)
+                const canceledOrder = await this.exchangeapi.cancelOrder(order)
+                canceled.push(canceledOrder)
             } catch (e) {
-                
             }
         }
-        this.dataStore.deleteActiveOrders(key, canceledOrders)
+        this.dataStore.deleteActiveOrders('key', canceled)
+
         // cancelOrdersはexchangeapi側で複数オーダーをイテレートするように委任する
         try {
             const canceledOrders = await this.exchangeapi.cancelOrders(expiredOrders)
             // this.dataStore.setActiveOrder()
-            this.dataStore.deleteActiveOrders(key, canceledOrders)
-        } catch (e) {
-
-        }
+            this.dataStore.deleteActiveOrders('key', canceledOrders)
+        } catch (e) { }
 
         // try {
         //     // await new Promise((resolve) => setTimeout(resolve, 1000))

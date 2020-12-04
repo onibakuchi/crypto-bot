@@ -12,6 +12,9 @@ export abstract class BaseComponentBot {
 }
 
 export abstract class AbstractClassExchange extends BaseComponentBot {
+    cancelOrder(order: Order) {
+        throw new Error('Method not implemented.');
+    }
     fetchActiveOrders() {
         throw new Error('Method not implemented.');
     }
