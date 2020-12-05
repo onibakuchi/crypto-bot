@@ -1,8 +1,4 @@
-import { strict } from 'assert';
 import CCXT from 'ccxt';
-import { type } from 'os';
-import { start } from 'repl';
-import { symbolName } from 'typescript';
 import { Order } from './DataStore';
 
 export abstract class BaseComponentBot {
@@ -28,18 +24,59 @@ export abstract class AbstractClassExchange extends BaseComponentBot {
         // ({ "apikey": APIKEY, "apisecret": APISECRET } = config[exchangeId.toUpperCase()]);
         this.CCXT = new CCXT[this.exchangeId]({})
     }
-    public async fetchOHLCV(symbol, timeframe, since, limit, params, counts = 0) {
+    public async createOrder(order) { }
+    public async createOrders(orders: Order[], counts = 0): Promise<Order[]> {
+        for (const order of orders) {
+            try {
+                const { id, symbol, type, side, amount, price, params } = order;
+                await new Promise((resolve) => setTimeout(resolve, 1000))
+                const res = await this.CCXT.createOrder(symbol, type, side, amount, price, params);
+                order.status = res.status;
+                console.log(res);
+            } catch (e) {
+                console.log('[ERROR]:function CreateOrders', e);
+                if (counts < 1) {
+                    console.log('[Info]:Retry...');
+                    await this.createOrders([order], counts++);
+                } else console.log('[ERROR]:Retry Failed');
+            }
+        }
+        return orders
+    }
+
+    public async cancelOrder(order: Order) { }
+    public async cancelOrders(orders: Order[], counts = 0): Promise<Order[]> {
+        for (const order of orders) {
+            try {
+                const { id, symbol, type, side, amount, price, params } = order;
+                await new Promise((resolve) => setTimeout(resolve, 1000))
+                const res = await this.CCXT.cancelOrder(id, symbol, params);
+                order.status = res.status;
+                console.log(res);
+            } catch (e) {
+                console.log('[ERROR]:function cancelOrders', e);
+                if (counts < 1) {
+                    console.log('[Info]:Retry...');
+                    await this.createOrders([order], counts++);
+                } else console.log('[ERROR]:Retry Failed');
+            }
+        }
+        return orders
+    }
+    public async fetchOHLCV(symbol, timeframe, since, limit, params, counts = 0): Promise<number[][]> {
         try {
-            await this.CCXT.fetchOHLCV(symbol, timeframe, since, limit, params);
+            return await this.CCXT.fetchOHLCV(symbol, timeframe, since, limit, params);
         } catch (e) {
-            console.log('[ERROR]:');
-            console.log('[Info]:Retry...');
-            await this.fetchOHLCV(symbol, timeframe, since, limit, params, counts++);
+            console.log('[ERROR]:function fetchOHLCV', e);
+            if (counts < 1) {
+                await this.fetchOHLCV(symbol, timeframe, since, limit, params, counts++);
+                console.log('[Info]:Retry...');
+            } else console.log('[ERROR]:Retry Failed');
         }
     }
-    public async fetchOrders(orders: IterableIterator<Order>): Promise<void>
-    public async fetchOrders(orders: Order[]): Promise<void>
-    public async fetchOrders(orders: any): Promise<void> {
+    public async fetchOrders(orders: IterableIterator<Order>): Promise<Order[]>
+    public async fetchOrders(orders: Order[]): Promise<Order[]>
+    public async fetchOrders(orders: any): Promise<Order[]> {
         for (const order of orders) {
             const { id, symbol, type, side, amount, price, params } = order;
             await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -47,27 +84,12 @@ export abstract class AbstractClassExchange extends BaseComponentBot {
             console.log(res);
             order.status = res.status;
         }
-    }
-    public async fetchContractedOrder(order) { }
-
-    public async cancelOrder(order: Order) { }
-    public async cancelOrders(order) { }
-
-    public async createOrder(order) { }
-    public async createOrders(orders: Order[]) {
-        for (const order of orders) {
-            const { id, symbol, type, side, amount, price, params } = order;
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-            const res = await this.CCXT.createOrder(symbol, type, side, amount, price, params);
-            console.log(res);
-            order.status = res.status;
-        }
         return orders
     }
+    public async fetchContractedOrder(order) { }
 }
 
 class ConcreteExchange11 extends AbstractClassExchange {
-    public async fetchOrders(orders: any) { }
     protected _cancelOrder(order: any) {
         throw new Error('Method not implemented.');
     }
@@ -79,9 +101,6 @@ class ConcreteExchange11 extends AbstractClassExchange {
 }
 
 class ConcreteExchange22 extends AbstractClassExchange {
-    public async fetchOrders(orders: any): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
     protected _cancelOrder(order: any) {
         throw new Error('Method not implemented.');
     }

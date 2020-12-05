@@ -25,24 +25,21 @@ export interface EffectiveOrder extends PreparedOrder {
 }
 export interface DataStoreInterface {
     ohlcv: number[][]
-    preparedOrders
     contractedOrders: Map<string, Order>;
-    activeOrders
-
     preparedOrders2: Map<string, Order>;
     activeOrders2: Map<string, Order>;
     position
 
     getOHCV(): number[][]
     getPreparedOrders()
-    getActiveOrders(): Map<string, Order>;// IterableIterator<[string, Order]>
+    getActiveOrders(): Map<string, Order>;
     getExpiredOrders(): Order[]
     getContractedOrder(): any
     pendingOrderCount(): number
 
-    deleteActiveOrders(key, orders): void
-    updateOrderStatus(orders): void
-    setActiveOrders(orders: Order[]): void
+    deleteActiveOrders(): void
+    updateOrderStatus(): void
+    updatePreparedOrders(): void
     setPreparedOrders(orders: Order[]): void
     setOHLCV(ohlcv): void
 
@@ -51,14 +48,61 @@ export interface DataStoreInterface {
     setPosition(orders)
 }
 
-class DataStore implements DataStoreInterface {
-    ohlcv: number[][]
-    preparedOrders = []
-    activeOrders = [];
-
+abstract class AbstractDatastore implements DataStoreInterface {
+    ohlcv: number[][];
     contractedOrders: Map<string, Order>;
-    preparedOrders2 = new Map()
-    activeOrders2 = new Map();
+    preparedOrders2: Map<string, Order>;
+    activeOrders2: Map<string, Order>;
+    position: any;
+    getOHCV(): number[][] {
+        throw new Error("Method not implemented.");
+    }
+    getPreparedOrders() {
+        throw new Error("Method not implemented.");
+    }
+    getActiveOrders(): Map<string, Order> {
+        throw new Error("Method not implemented.");
+    }
+    getExpiredOrders(): Order[] {
+        throw new Error("Method not implemented.");
+    }
+    getContractedOrder() {
+        throw new Error("Method not implemented.");
+    }
+    pendingOrderCount(): number {
+        throw new Error("Method not implemented.");
+    }
+    deleteActiveOrders(): void {
+        throw new Error("Method not implemented.");
+    }
+    updateOrderStatus(): void {
+        throw new Error("Method not implemented.");
+    }
+    updatePreparedOrders(): void {
+        throw new Error("Method not implemented.");
+    }
+    setPreparedOrders(orders: Order[]): void {
+        throw new Error("Method not implemented.");
+    }
+    setOHLCV(ohlcv: any): void {
+        throw new Error("Method not implemented.");
+    }
+    getPosition(orders: any) {
+        throw new Error("Method not implemented.");
+    }
+    setContractedOrder(oder: any) {
+        throw new Error("Method not implemented.");
+    }
+    setPosition(orders: any) {
+        throw new Error("Method not implemented.");
+    }
+}
+
+class Datastore implements DataStoreInterface {
+    ohlcv: number[][]
+    contractedOrders: Map<string, Order> = new Map();
+    preparedOrders2: Map<string, Order> = new Map();
+    activeOrders2: Map<string, Order> = new Map();
     position = {
         symbol: '',
         side: '',
@@ -67,76 +111,61 @@ class DataStore implements DataStoreInterface {
         avgOpenPrice: 1,
         breakEvenPrice: 1,
     }
-
-    deleteActiveOrders(keys, orders = undefined) {
-        if (keys != undefined) {
-            for (const key of keys) {
+    updateOrderStatus(): void {
+        const iterator: IterableIterator<[string, Order]> = this.activeOrders2.entries();
+        for (const [key, order] of iterator) {
+            if (!this.activeOrders2.has(key)) {
+                console.log('[Error]:');
+                continue;
+            }
+            if (order['status'] == 'open') {
+                // this.activeOrders2.set(key, order);
+            }
+            if (order['status'] == 'closed') {
+                this.activeOrders2.delete(key);
+                this.contractedOrders.set(key, order);
+                // this.setPosition(order);
+            }
+            if (order['status'] == 'canceled') {
                 this.activeOrders2.delete(key);
             }
-            return
-        }
-        //OR
-        if (orders != undefined) {
-            for (const order of orders) {
-                this.activeOrders2.delete(order['orderName']);
-            }
-        }
 
-        if (orders != undefined) {
-            for (const order of orders) {
-                this.activeOrders2.delete(order['orderName']);
-            }
         }
     }
     setPreparedOrders(orders): void {
         for (const order of orders) {
             const key = order['orderName'];
-            delete order.orderName;
             if (this.activeOrders2.has(key)) {
-                console.log('[Error]:');
+                console.log(`[Info]:skipped. Order<${key}> is already prepared...`);
                 continue;
             }
             this.preparedOrders2.set(key, order)
         }
     }
-    setActiveOrders(orders): void {
+    updatePreparedOrders(): void {
+        const orders = this.preparedOrders2.values()
         for (const order of orders) {
             const key = order['orderName'];
-            if (!this.preparedOrders2.has(key)) {
-                console.log('[Error]:');
-                continue;
-            }
             if (order.status == 'open') {
                 this.activeOrders2.set(key, order);
                 this.preparedOrders2.delete(key);
             }
             if (order.status == 'closed') {
-                this.activeOrders2.set(key, order);
-                this.setPosition
+                this.contractedOrders.set(key, order);
+                this.activeOrders2.delete(key);
+                this.preparedOrders2.delete(key);
+            }
+            if (order.status == 'canceled') {
+                this.activeOrders2.delete(key);
                 this.preparedOrders2.delete(key);
             }
         }
-        // this.activeOrders.push(order);
     }
-    updateOrderStatus(fetchedOrders): void {
-        const iterator: IterableIterator<[string, Order]> = this.activeOrders2.entries();
-        for (const [key, order] of iterator) {
-            for (const fetched of fetchedOrders) {
-                if (order.id != fetched.id) continue;
-                if (!this.activeOrders2.has(key)) {
-                    console.log('[Error]:');
-                    continue;
-                }
-                if (fetched['status'] == 'open') {
-                    this.activeOrders2.set(key, order);
-                }
-                if (fetched['status'] == 'closed') {
-                    this.activeOrders2.delete(key);
-                }
-                if (fetched['status'] == 'canceled') {
-                    this.activeOrders2.delete(key);
-                }
-            }
+    deleteActiveOrders() {
+        const orders = this.activeOrders2.values();
+        for (const order of orders) {
+            if (order.expiracy > Date.now()) { }
+            this.activeOrders2.delete(order.orderName);
         }
     }
     setOHLCV(ohlcv) {
@@ -172,5 +201,5 @@ class DataStore implements DataStoreInterface {
         // ave_open_price
     }
 
-
 }
+

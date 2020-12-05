@@ -1,5 +1,5 @@
-import { Order } from 'ccxt';
 import { Mediator } from './Mediator';
+import {Order} from './DataStore';
 
 abstract class AbstractStrategy {
     protected abstract mediator: Mediator;
