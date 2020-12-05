@@ -1,7 +1,7 @@
 // type Status = 'Contracted' | 'PartialContracted' | 'OpenOrder' | 'Await' | 'Error'
 // type Status = 'ActiveOrder' | 'Position' | 'Await' | 'Error'
 
-interface Order {
+export interface Order {
     orderName: string;
     id: number
     symbol: string;
@@ -21,17 +21,16 @@ export interface DataStoreInterface {
     activeOrders2: Map<string, Order>;
     positions
 
-
     getOHCV(): number[][]
     getPreparedOrders()
-    getActiveOrders()
+    getActiveOrders(): IterableIterator<[string, Order]>
     getExpiredOrders(): Order[]
     getContractedOrder(): any
     pendingOrderCount(): number
 
     deleteActiveOrders(key, orders): void
 
-    setActiveOrders(orders: Order[]): void //preparedからのぞいてActiveにする
+    setActiveOrders(orders: Order[]): void 
     setPreparedOrders(orders: Order[]): void
     setOHLCV(ohlcv): void
 
@@ -50,13 +49,18 @@ class DataStore implements DataStoreInterface {
     public activeOrders2 = new Map();
     public positions = [{}]
 
-    deleteActiveOrders(keys, orders) {
-        for (const order of orders) {
-            this.activeOrders2.delete(order['orderName']);
+    deleteActiveOrders(keys, orders=undefined) {
+        if (keys != undefined) {
+            for (const key of keys) {
+                this.activeOrders2.delete(key);
+            }
+            return
         }
         //OR
-        for (const key of keys) {
-            this.activeOrders2.delete(key);
+        if (orders != undefined) {
+            for (const order of orders) {
+                this.activeOrders2.delete(order['orderName']);
+            }
         }
     }
     setPreparedOrders(orders): void {
@@ -77,7 +81,18 @@ class DataStore implements DataStoreInterface {
                 console.log('[Error]:');
                 continue;
             }
-            this.activeOrders2.set(key, order)
+            this.activeOrders2.set(key, order);
+        }
+        // this.activeOrders.push(order);
+    }
+    update(orders): void {
+        for (const order of orders) {
+            const key = order['orderName'];
+            if (this.preparedOrders2.has(key)) {
+                console.log('[Error]:');
+                continue;
+            }
+            this.activeOrders2.set(key, order);
         }
         // this.activeOrders.push(order);
     }

@@ -1,6 +1,7 @@
 import { AbstractClassExchange } from './Exchanges';
 import { Strategy } from './Strategy';
-import { DataStoreInterface } from './DataStore';
+import { DataStoreInterface, Order } from './DataStore';
+
 
 export interface Mediator {
     notify(sender: object, event: string): void;
@@ -27,14 +28,23 @@ export class ConcreteMediator2 implements Mediator {
         }
         return methods[methodName]
     }
-    public setComponent(comp: AbstractClassExchange): void { }
+    public setExchange(comp: AbstractClassExchange): void { }
     public setStrategy(_strategies: typeof Strategy[]): void {
         // this.strategies.push(new _strategies[2](this))
         _strategies.forEach(el => this.strategies.push(new el(this)));
     }
+    private adapter(orders: Order[]) {
+        const copiedOrds: Order[] = JSON.parse(JSON.stringify(orders))
+        copiedOrds.forEach(el => {
+            delete el.expiracy
+            delete el.orderName
+            delete el.id
+        })
+        return copiedOrds
+    }
     public main() {
         this.setOHLCV();
-        this.updateActiveOrder();
+        this.updateStatus();
         this.exeStrategy()
         this.order()
         this.cancel()
@@ -43,8 +53,9 @@ export class ConcreteMediator2 implements Mediator {
         const ohlcv = this.exchangeapi.fetchOHLCV('USD', '1h', 1, 1, 1)
         this.dataStore.setOHLCV(ohlcv);
     }
-    private updateActiveOrder() {
-        const orders = this.exchangeapi.fetchActiveOrders()
+    private updateStatus() {
+        const ids = this.dataStore.getActiveOrders()
+        const orders = this.exchangeapi.fetchOrders(ids)
         this.dataStore.setActiveOrders(orders);
     }
     private exeStrategy() {
@@ -58,7 +69,7 @@ export class ConcreteMediator2 implements Mediator {
         for (const order of orders) {
             try {
                 await new Promise((resolve) => setTimeout(resolve, 1000))
-                await this.exchangeapi.createOrder();
+                await this.exchangeapi.createOrder(order);
                 this.dataStore.setActiveOrders(order)
             } catch (e) {
 

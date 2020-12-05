@@ -14,9 +14,9 @@ abstract class AbstractStrategy {
         // this.mediator.dataStoreMethods('order')(orders2)
         return orders2
     }
-    protected algorithym() { }
     public exit() { }
-    public hookWhenContracted() { }
+    protected abstract algorithym()
+    protected abstract hookWhenContracted()
 }
 export class Strategy extends AbstractStrategy {
     protected mediator: Mediator

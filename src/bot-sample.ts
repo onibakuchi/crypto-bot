@@ -21,7 +21,7 @@ const transite = state => states[state]
 const mediater = new ConcreteMediator2()
 console.log('Same client code can work with different subclasses:');
 const ftxInstance = new (ExchangeRepositoryFactory.get('ftx'))()
-mediater.setComponent(ftxInstance);
+mediater.setExchange(ftxInstance);
 
 function bot(abstractClass: AbstractClassExchange) {
     let symbol, timeframe, since, limit, params;

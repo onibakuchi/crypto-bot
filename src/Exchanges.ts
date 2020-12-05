@@ -1,4 +1,6 @@
 import CCXT from 'ccxt';
+import { Order } from './DataStore';
+
 export abstract class BaseComponentBot {
     protected mediator: Mediator;
 
@@ -12,21 +14,6 @@ export abstract class BaseComponentBot {
 }
 
 export abstract class AbstractClassExchange extends BaseComponentBot {
-    cancelOrder(order: Order) {
-        throw new Error('Method not implemented.');
-    }
-    fetchActiveOrders() {
-        throw new Error('Method not implemented.');
-    }
-    fetchContractedOrder() {
-        throw new Error('Method not implemented.');
-    }
-    cancelOrders(): any {
-        throw new Error('Method not implemented.');
-    }
-    createOrder() {
-        throw new Error('Method not implemented.');
-    }
     protected CCXT: CCXT.Exchange;
     protected abstract exchangeId: string;
     constructor(mediator: Mediator = null) {
@@ -37,50 +24,44 @@ export abstract class AbstractClassExchange extends BaseComponentBot {
         // ({ "apikey": APIKEY, "apisecret": APISECRET } = config[exchangeId.toUpperCase()]);
         this.CCXT = new CCXT[this.exchangeId]({})
     }
-    public fetchOHLCV(symbol, timeframe, since, limit, params): void {
-        console.log('AbstractClassExchange says: I am doing the bulk of the work');
+    public async fetchOHLCV(symbol, timeframe, since, limit, params) {
         try {
-            const ohlcv = this._fetchOHLCV(symbol, timeframe, since, limit, params);
-            this.mediator.notify(this, 'fetchOHLCV')
-            return ohlcv
+            return this._fetchOHLCV(symbol, timeframe, since, limit, params);
         } catch (e) {
-            this.mediator.notify(this, 'fetchOHLCV')
         }
     }
-    protected baseOperation2(): void {
-        console.log('AbstractClassExchange says: But I let subclasses override some operations');
+    public async cancelOrder(order: Order) {
+        this._cancelOrder(order);
     }
-    protected abstract _fetchOHLCV(symbol, timeframe, since, limit, params): void;
-    protected abstract requiredOperation2(): void;
-    protected hook1(): void { }
-
-    protected hook2(): void { }
+    public async fetchContractedOrder(order) {
+        this._cancelOrder(order);
+    }
+    public async cancelOrders(order) {
+        this._cancelOrder(order);
+    }
+    public async createOrder(order) {
+        this._cancelOrder(order);
+    }
+    public async createOrders(order) {
+        this._cancelOrder(order);
+    }
+    public abstract async fetchOrders(orders)
+    protected abstract async _fetchOHLCV(symbol, timeframe, since, limit, params): Promise<void>;
+    protected abstract async _cancelOrder(order)
 }
 
 class ConcreteExchange11 extends AbstractClassExchange {
     protected exchangeId = 'bitbank'
-    protected _fetchOHLCV(symbol, timeframe, since?, limit?, params?): void {
+    protected async _fetchOHLCV(symbol, timeframe, since?, limit?, params?) {
         this.CCXT.fetchOHLCV(symbol, timeframe, since, limit, params)
         console.log('ConcreteExchange11 says: Implemented Operation1');
-    }
-
-    protected requiredOperation2(): void {
-        console.log('ConcreteExchange11 says: Implemented Operation2');
     }
 }
 
 class ConcreteExchange22 extends AbstractClassExchange {
     protected exchangeId = 'ftx'
-    protected _fetchOHLCV(): void {
-        console.log('ConcreteExchange22 says: Implemented Operation1');
-    }
-
-    protected requiredOperation2(): void {
-        console.log('ConcreteExchange22 says: Implemented Operation2');
-    }
-
-    protected hook1(): void {
-        console.log('ConcreteExchange22 says: Overridden Hook1');
+    protected async _fetchOHLCV() {
+        console.log('ConcreteExchange22 says: Implementeation1');
     }
 }
 
