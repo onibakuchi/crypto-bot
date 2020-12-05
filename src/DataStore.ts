@@ -12,40 +12,23 @@ export interface Order {
     price: number;
     params: {};
 }
-export interface PreparedOrder {
-    symbol: string;
-    side: 'buy' | 'sell';
-    ordType: string;
-    price: number;
-    params: {};
-    expiracy: number;
-}
-export interface EffectiveOrder extends PreparedOrder {
-    id: number;
-}
 export interface DataStoreInterface {
-    ohlcv: number[][]
-    contractedOrders: Map<string, Order>;
-    preparedOrders2: Map<string, Order>;
-    activeOrders2: Map<string, Order>;
-    position
-
+    // ohlcv: number[][]
+    // contractedOrders: Map<string, Order>;
+    // preparedOrders2: Map<string, Order>;
+    // activeOrders2: Map<string, Order>;
+    // position
     getOHCV(): number[][]
     getPreparedOrders()
     getActiveOrders(): Map<string, Order>;
     getExpiredOrders(): Order[]
-    getContractedOrder(): any
-    pendingOrderCount(): number
 
-    deleteActiveOrders(): void
     updateOrderStatus(): void
     updatePreparedOrders(): void
     setPreparedOrders(orders: Order[]): void
     setOHLCV(ohlcv): void
 
     getPosition(orders)
-    setContractedOrder(oder)
-    setPosition(orders)
 }
 
 abstract class AbstractDatastore implements DataStoreInterface {
@@ -54,52 +37,23 @@ abstract class AbstractDatastore implements DataStoreInterface {
     preparedOrders2: Map<string, Order>;
     activeOrders2: Map<string, Order>;
     position: any;
-    getOHCV(): number[][] {
-        throw new Error("Method not implemented.");
-    }
-    getPreparedOrders() {
-        throw new Error("Method not implemented.");
-    }
-    getActiveOrders(): Map<string, Order> {
-        throw new Error("Method not implemented.");
-    }
-    getExpiredOrders(): Order[] {
-        throw new Error("Method not implemented.");
-    }
-    getContractedOrder() {
-        throw new Error("Method not implemented.");
-    }
-    pendingOrderCount(): number {
-        throw new Error("Method not implemented.");
-    }
-    deleteActiveOrders(): void {
-        throw new Error("Method not implemented.");
-    }
-    updateOrderStatus(): void {
-        throw new Error("Method not implemented.");
-    }
-    updatePreparedOrders(): void {
-        throw new Error("Method not implemented.");
-    }
-    setPreparedOrders(orders: Order[]): void {
-        throw new Error("Method not implemented.");
-    }
-    setOHLCV(ohlcv: any): void {
-        throw new Error("Method not implemented.");
-    }
-    getPosition(orders: any) {
-        throw new Error("Method not implemented.");
-    }
-    setContractedOrder(oder: any) {
-        throw new Error("Method not implemented.");
-    }
-    setPosition(orders: any) {
-        throw new Error("Method not implemented.");
-    }
-}
 
-class Datastore implements DataStoreInterface {
-    ohlcv: number[][]
+    public getOHCV(): number[][] { return this.ohlcv }
+    public setOHLCV(ohlcv) {
+        this.ohlcv = ohlcv;
+    }
+    public abstract getPreparedOrders(): Map<string, Order>
+    public abstract getActiveOrders(): Map<string, Order>
+    public abstract getExpiredOrders(): Order[]
+    // public abstract deleteActiveOrders(): void
+    public abstract updateOrderStatus(): void
+    public abstract updatePreparedOrders(): void
+    public abstract setPreparedOrders(orders: Order[]): void
+    public abstract getPosition()
+    public abstract setPosition()
+}
+class Datastore implements AbstractDatastore {
+    ohlcv: number[][];
     contractedOrders: Map<string, Order> = new Map();
     preparedOrders2: Map<string, Order> = new Map();
     activeOrders2: Map<string, Order> = new Map();
@@ -136,7 +90,7 @@ class Datastore implements DataStoreInterface {
         for (const order of orders) {
             const key = order['orderName'];
             if (this.activeOrders2.has(key)) {
-                console.log(`[Info]:skipped. Order<${key}> is already prepared...`);
+                console.log(`[Info]:skipped. Order<${key}> is already open...`);
                 continue;
             }
             this.preparedOrders2.set(key, order)
@@ -161,24 +115,15 @@ class Datastore implements DataStoreInterface {
             }
         }
     }
-    deleteActiveOrders() {
-        const orders = this.activeOrders2.values();
-        for (const order of orders) {
-            if (order.expiracy > Date.now()) { }
-            this.activeOrders2.delete(order.orderName);
-        }
-    }
-    setOHLCV(ohlcv) {
-        this.ohlcv = ohlcv;
-    }
+    // deleteActiveOrders() {
+    //     const orders = this.activeOrders2.values();
+    //     for (const order of orders) {
+    //         if (order.expiracy > Date.now()) { }
+    //         this.activeOrders2.delete(order.orderName);
+    //     }
+    // }
     getActiveOrders() { return this.activeOrders2 }
-    setContractedOrder(order): void {
-    }
-    getOHCV() { return this.ohlcv }
-    pendingOrderCount() {
-        return this.activeOrders2.size + this.preparedOrders2.size || 0;
-    }
-    getExpiredOrders() {
+    getExpiredOrders(): Order[] {
         const expiredOrders = [];
         for (const value of this.activeOrders2.values()) {
             console.log(` ${value}`);
@@ -188,18 +133,25 @@ class Datastore implements DataStoreInterface {
         }
         return expiredOrders;
     }
-    getContractedOrder() { }
-    getPreparedOrders() { }
-    setPosition(orders) {
+    getPreparedOrders(): Map<string, Order> { return this.preparedOrders2 }
+    setPosition() {
+        const orders = this.contractedOrders.values();
         for (const order of orders) {
             if (order.side == this.position.side) {
                 this.position.amount += order.amount;
             }
         }
+        this.contractedOrders.clear();
     }
     getPosition() {
         // ave_open_price
     }
-
+    public getOHCV(): number[][] { return this.ohlcv }
+    public pendingOrderCount(): number {
+        return this.activeOrders2.size + this.preparedOrders2.size || 0;
+    }
+    public setOHLCV(ohlcv) {
+        this.ohlcv = ohlcv;
+    }
 }
 

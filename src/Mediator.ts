@@ -21,27 +21,25 @@ export class ConcreteMediator2 implements Mediator {
     public dataStoreMethods(methodName) {
         const methods = {
             ohlcv: this.dataStore.getOHCV,
-            pendingOrderCount: this.dataStore.pendingOrderCount,
-            preparedOrder: this.dataStore.getPreparedOrders,
-            activeOrder: this.dataStore.getActiveOrders,
+            activeOrders: this.dataStore.getActiveOrders,
+            position: this.dataStore.getPosition,
             order: this.dataStore.setPreparedOrders,
         }
         return methods[methodName]
     }
     public setExchange(comp: AbstractClassExchange): void { }
     public setStrategy(_strategies: typeof Strategy[]): void {
-        // this.strategies.push(new _strategies[2](this))
         _strategies.forEach(el => this.strategies.push(new el(this)));
     }
-    public main() {
-        this.setOHLCV();
-        this.updateStatus();
+    public async main() {
+        await this.setOHLCV();
+        await this.updateStatus();
         this.exeStrategy()
-        this.order()
-        this.cancel()
+        await this.order()
+        await this.cancel()
     }
-    private setOHLCV() {
-        const ohlcv = this.exchangeapi.fetchOHLCV('USD', '1h', 1, 1, 1)
+    private async setOHLCV() {
+        const ohlcv = await this.exchangeapi.fetchOHLCV('USD', '1h', 1, 1, 1)
         this.dataStore.setOHLCV(ohlcv);
     }
     private async updateStatus() {
@@ -84,10 +82,7 @@ export class ConcreteMediator2 implements Mediator {
         try {
             const expiredOrders = this.dataStore.getExpiredOrders()
             await this.exchangeapi.cancelOrders(expiredOrders)
-            // this.dataStore.setActiveOrder()
-            this.dataStore.deleteActiveOrders()
         } catch (e) { }
-        const canceled = []
         // for (const order of expiredOrders) {
         //     try {
         //         await new Promise((resolve) => setTimeout(resolve, 1000))
