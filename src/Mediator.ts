@@ -2,6 +2,17 @@ import { AbstractClassExchange } from './Exchanges';
 import { Strategy } from './Strategy';
 import { DataStoreInterface, Order } from './DataStore';
 
+export abstract class BaseComponentBot {
+    protected mediator: Mediator;
+
+    constructor(mediator: Mediator = null) {
+        this.mediator = mediator;
+    }
+
+    public setMediator(mediator: Mediator): void {
+        this.mediator = mediator;
+    }
+}
 
 export interface Mediator {
     notify(sender: object, event: string): void;

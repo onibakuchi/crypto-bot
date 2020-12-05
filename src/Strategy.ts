@@ -1,8 +1,7 @@
-import { Mediator } from './Mediator';
+import { BaseComponentBot } from './Mediator';
 import { Order } from './DataStore';
 
-abstract class AbstractStrategy {
-    protected abstract mediator: Mediator;
+abstract class AbstractStrategy extends BaseComponentBot {
     public strategy(): Order[] {
         const pyraminding = 0;
         const orders2 = [];
@@ -23,11 +22,7 @@ abstract class AbstractStrategy {
     protected abstract hookWhenHavePosi()
 }
 export class Strategy extends AbstractStrategy {
-    protected mediator: Mediator
-    constructor(_mediator) {
-        super();
-        this.mediator = _mediator
-    }
+
     protected exit() {
         //Reduce Only
         const orders = [];

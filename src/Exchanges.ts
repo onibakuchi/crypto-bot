@@ -1,17 +1,6 @@
 import CCXT from 'ccxt';
 import { Order } from './DataStore';
-
-export abstract class BaseComponentBot {
-    protected mediator: Mediator;
-
-    constructor(mediator: Mediator = null) {
-        this.mediator = mediator;
-    }
-
-    public setMediator(mediator: Mediator): void {
-        this.mediator = mediator;
-    }
-}
+import { BaseComponentBot, Mediator } from './Mediator';
 
 export abstract class AbstractClassExchange extends BaseComponentBot {
     protected CCXT: CCXT.Exchange;
@@ -86,7 +75,6 @@ export abstract class AbstractClassExchange extends BaseComponentBot {
         }
         return orders
     }
-    public async fetchContractedOrder(order) { }
 }
 
 class ConcreteExchange11 extends AbstractClassExchange {
