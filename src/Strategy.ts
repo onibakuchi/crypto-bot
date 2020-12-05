@@ -1,8 +1,9 @@
+import { Order } from 'ccxt';
 import { Mediator } from './Mediator';
 
 abstract class AbstractStrategy {
     protected abstract mediator: Mediator;
-    public strategy(): void {
+    public strategy(): Order[] {
         let orders2;
         const counts = this.mediator.dataStoreMethods('pendingCounts')
         if (counts >= 3) return;

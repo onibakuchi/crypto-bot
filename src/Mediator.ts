@@ -33,15 +33,6 @@ export class ConcreteMediator2 implements Mediator {
         // this.strategies.push(new _strategies[2](this))
         _strategies.forEach(el => this.strategies.push(new el(this)));
     }
-    private adapter(orders: Order[]) {
-        const copiedOrds: Order[] = JSON.parse(JSON.stringify(orders))
-        copiedOrds.forEach(el => {
-            delete el.expiracy
-            delete el.orderName
-            delete el.id
-        })
-        return copiedOrds
-    }
     public main() {
         this.setOHLCV();
         this.updateStatus();
@@ -49,14 +40,22 @@ export class ConcreteMediator2 implements Mediator {
         this.order()
         this.cancel()
     }
-    private setOHLCV() {
+     private setOHLCV() {
         const ohlcv = this.exchangeapi.fetchOHLCV('USD', '1h', 1, 1, 1)
         this.dataStore.setOHLCV(ohlcv);
     }
-    private updateStatus() {
-        const ids = this.dataStore.getActiveOrders()
-        const orders = this.exchangeapi.fetchOrders(ids)
-        this.dataStore.setActiveOrders(orders);
+    private async updateStatus() {
+        const values =  this.dataStore.getActiveOrders().values()
+        const fetchedOrds = await this.exchangeapi.fetchOrders(values)
+        this.dataStore.updateOrderStatus(fetchedOrds);
+
+        /* db???
+        Mapnoのキーとidが違うので，idToOrderNameかdbの検索をすることでid=>keyを手に入れる必要がある
+         */
+        // const iterator = this.dataStore.getActiveOrders();
+        // for (const [, value] of iterator) ids.push(value['id']);
+        // const orders = this.exchangeapi.fetchOrders(ids)
+        // this.dataStore.updateOrderStatus(orders);
     }
     private exeStrategy() {
         for (const strategy of this.strategies) {
@@ -75,20 +74,26 @@ export class ConcreteMediator2 implements Mediator {
 
             }
         }
+        //
+        try {
+            const createedOrds = await this.exchangeapi.createOrders(orders);
+            // this.dataStore.setActiveOrder()
+            this.dataStore.setActiveOrders('key', createedOrds)
+        } catch (e) { }
     }
     public async cancel() {
         const expiredOrders = this.dataStore.getExpiredOrders()
         // Mediator側で複数のオーダーを一個ずつイテレートする
         const canceled = []
-        for (const order of expiredOrders) {
-            try {
-                await new Promise((resolve) => setTimeout(resolve, 1000))
-                const canceledOrder = await this.exchangeapi.cancelOrder(order)
-                canceled.push(canceledOrder)
-            } catch (e) {
-            }
-        }
-        this.dataStore.deleteActiveOrders('key', canceled)
+        // for (const order of expiredOrders) {
+        //     try {
+        //         await new Promise((resolve) => setTimeout(resolve, 1000))
+        //         const canceledOrder = await this.exchangeapi.cancelOrder(order)
+        //         canceled.push(canceledOrder)
+        //     } catch (e) {
+        //     }
+        // }
+        // this.dataStore.deleteActiveOrders('key', canceled)
 
         // cancelOrdersはexchangeapi側で複数オーダーをイテレートするように委任する
         try {
@@ -96,19 +101,5 @@ export class ConcreteMediator2 implements Mediator {
             // this.dataStore.setActiveOrder()
             this.dataStore.deleteActiveOrders('key', canceledOrders)
         } catch (e) { }
-
-        // try {
-        //     // await new Promise((resolve) => setTimeout(resolve, 1000))
-        //     const expiredOrders = this.dataStore.getExpiredOrders()
-        //     //**cancelOrderがasyncジェネレーターである必要がある***
-        //     for await (const canceledOrdKey of this.exchangeapi.cancelOrders(expiredOrders)) {
-        //         if (canceledOrdKey) {
-        //             this.dataStore.deleteActiveOrders(canceledOrdKey,{})
-        //         }
-        //     }
-        //     // this.dataStore.setActiveOrder()
-        // } catch (e) {
-
-        // }
     }
 }

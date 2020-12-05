@@ -1,9 +1,18 @@
 // type Status = 'Contracted' | 'PartialContracted' | 'OpenOrder' | 'Await' | 'Error'
 // type Status = 'ActiveOrder' | 'Position' | 'Await' | 'Error'
-
 export interface Order {
     orderName: string;
-    id: number
+    id: string;
+    expiracy: number;
+    status: string;
+    symbol: string;
+    type: string;
+    side: 'buy' | 'sell';
+    amount: number;
+    price: number;
+    params: {};
+}
+export interface PreparedOrder {
     symbol: string;
     side: 'buy' | 'sell';
     ordType: string;
@@ -11,26 +20,29 @@ export interface Order {
     params: {};
     expiracy: number;
 }
+export interface EffectiveOrder extends PreparedOrder {
+    id: number;
+}
 export interface DataStoreInterface {
     ohlcv: number[][]
     preparedOrders
-    contractedOrders
+    contractedOrders: Map<string, Order>;
     activeOrders
 
     preparedOrders2: Map<string, Order>;
     activeOrders2: Map<string, Order>;
-    positions
+    position
 
     getOHCV(): number[][]
     getPreparedOrders()
-    getActiveOrders(): IterableIterator<[string, Order]>
+    getActiveOrders(): Map<string, Order>;// IterableIterator<[string, Order]>
     getExpiredOrders(): Order[]
     getContractedOrder(): any
     pendingOrderCount(): number
 
     deleteActiveOrders(key, orders): void
-
-    setActiveOrders(orders: Order[]): void 
+    updateOrderStatus(orders): void
+    setActiveOrders(orders: Order[]): void
     setPreparedOrders(orders: Order[]): void
     setOHLCV(ohlcv): void
 
@@ -40,16 +52,23 @@ export interface DataStoreInterface {
 }
 
 class DataStore implements DataStoreInterface {
-    public ohlcv: number[][]
-    public preparedOrders = []
-    public activeOrders = [];
-    public contractedOrders = [];
+    ohlcv: number[][]
+    preparedOrders = []
+    activeOrders = [];
 
-    public preparedOrders2 = new Map()
-    public activeOrders2 = new Map();
-    public positions = [{}]
+    contractedOrders: Map<string, Order>;
+    preparedOrders2 = new Map()
+    activeOrders2 = new Map();
+    position = {
+        symbol: '',
+        side: '',
+        amount: 1,
+        amountUSD: 1,
+        avgOpenPrice: 1,
+        breakEvenPrice: 1,
+    }
 
-    deleteActiveOrders(keys, orders=undefined) {
+    deleteActiveOrders(keys, orders = undefined) {
         if (keys != undefined) {
             for (const key of keys) {
                 this.activeOrders2.delete(key);
@@ -62,11 +81,17 @@ class DataStore implements DataStoreInterface {
                 this.activeOrders2.delete(order['orderName']);
             }
         }
+
+        if (orders != undefined) {
+            for (const order of orders) {
+                this.activeOrders2.delete(order['orderName']);
+            }
+        }
     }
     setPreparedOrders(orders): void {
-        // this.preparedOrders.push(order)
         for (const order of orders) {
             const key = order['orderName'];
+            delete order.orderName;
             if (this.activeOrders2.has(key)) {
                 console.log('[Error]:');
                 continue;
@@ -77,31 +102,48 @@ class DataStore implements DataStoreInterface {
     setActiveOrders(orders): void {
         for (const order of orders) {
             const key = order['orderName'];
-            if (this.preparedOrders2.has(key)) {
+            if (!this.preparedOrders2.has(key)) {
                 console.log('[Error]:');
                 continue;
             }
-            this.activeOrders2.set(key, order);
+            if (order.status == 'open') {
+                this.activeOrders2.set(key, order);
+                this.preparedOrders2.delete(key);
+            }
+            if (order.status == 'closed') {
+                this.activeOrders2.set(key, order);
+                this.setPosition
+                this.preparedOrders2.delete(key);
+            }
         }
         // this.activeOrders.push(order);
     }
-    update(orders): void {
-        for (const order of orders) {
-            const key = order['orderName'];
-            if (this.preparedOrders2.has(key)) {
-                console.log('[Error]:');
-                continue;
+    updateOrderStatus(fetchedOrders): void {
+        const iterator: IterableIterator<[string, Order]> = this.activeOrders2.entries();
+        for (const [key, order] of iterator) {
+            for (const fetched of fetchedOrders) {
+                if (order.id != fetched.id) continue;
+                if (!this.activeOrders2.has(key)) {
+                    console.log('[Error]:');
+                    continue;
+                }
+                if (fetched['status'] == 'open') {
+                    this.activeOrders2.set(key, order);
+                }
+                if (fetched['status'] == 'closed') {
+                    this.activeOrders2.delete(key);
+                }
+                if (fetched['status'] == 'canceled') {
+                    this.activeOrders2.delete(key);
+                }
             }
-            this.activeOrders2.set(key, order);
         }
-        // this.activeOrders.push(order);
     }
     setOHLCV(ohlcv) {
         this.ohlcv = ohlcv;
     }
-    getActiveOrders() { return this.activeOrders2.entries() }
+    getActiveOrders() { return this.activeOrders2 }
     setContractedOrder(order): void {
-        this.positions.push(order)
     }
     getOHCV() { return this.ohlcv }
     pendingOrderCount() {
@@ -119,7 +161,13 @@ class DataStore implements DataStoreInterface {
     }
     getContractedOrder() { }
     getPreparedOrders() { }
-    setPosition(order) { }
+    setPosition(orders) {
+        for (const order of orders) {
+            if (order.side == this.position.side) {
+                this.position.amount += order.amount;
+            }
+        }
+    }
     getPosition() {
         // ave_open_price
     }
