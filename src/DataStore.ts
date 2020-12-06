@@ -30,7 +30,7 @@ export interface DatastoreInterface {
     updatePreparedOrders(): void
     setPreparedOrders(orders: Order[]): void
     setOHLCV(ohlcv): void
-    getPosition(orders)
+    getPosition(): Position
 }
 
 abstract class AbstractDatastore implements DatastoreInterface {
@@ -51,8 +51,8 @@ abstract class AbstractDatastore implements DatastoreInterface {
     public abstract updateOrderStatus(): void
     public abstract updatePreparedOrders(): void
     public abstract setPreparedOrders(orders: Order[]): void
-    public abstract getPosition()
-    public abstract setPosition()
+    public abstract getPosition(): Position
+    public abstract setPosition(): void
 }
 class Datastore implements AbstractDatastore {
     ohlcv: number[][];
