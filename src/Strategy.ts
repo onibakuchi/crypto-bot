@@ -1,5 +1,5 @@
 import { BaseComponentBot } from './Mediator';
-import { Order } from './DataStore';
+import { Order } from './Datastore';
 
 abstract class AbstractStrategy extends BaseComponentBot {
     public strategy(): Order[] {

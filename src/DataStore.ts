@@ -1,4 +1,3 @@
-// type Status = 'Contracted' | 'PartialContracted' | 'OpenOrder' | 'Await' | 'Error'
 // type Status = 'ActiveOrder' | 'Position' | 'Await' | 'Error'
 export interface Order {
     orderName: string;
@@ -8,16 +7,20 @@ export interface Order {
     symbol: string;
     type: string;
     side: 'buy' | 'sell';
+    timestamp: number;
     amount: number;
     price: number;
     params: {};
 }
-export interface DataStoreInterface {
-    // ohlcv: number[][]
-    // contractedOrders: Map<string, Order>;
-    // preparedOrders2: Map<string, Order>;
-    // activeOrders2: Map<string, Order>;
-    // position
+interface Position {
+    symbol: string
+    side: string
+    amount: number
+    amountUSD: number
+    avgOpenPrice: number | undefined,
+    breakEvenPrice: number | undefined,
+}
+export interface DatastoreInterface {
     getOHCV(): number[][]
     getPreparedOrders()
     getActiveOrders(): Map<string, Order>;
@@ -27,16 +30,15 @@ export interface DataStoreInterface {
     updatePreparedOrders(): void
     setPreparedOrders(orders: Order[]): void
     setOHLCV(ohlcv): void
-
     getPosition(orders)
 }
 
-abstract class AbstractDatastore implements DataStoreInterface {
+abstract class AbstractDatastore implements DatastoreInterface {
     ohlcv: number[][];
     contractedOrders: Map<string, Order>;
-    preparedOrders2: Map<string, Order>;
-    activeOrders2: Map<string, Order>;
-    position: any;
+    preparedOrders: Map<string, Order>;
+    activeOrders: Map<string, Order>;
+    position: Position;
 
     public getOHCV(): number[][] { return this.ohlcv }
     public setOHLCV(ohlcv) {
@@ -55,63 +57,55 @@ abstract class AbstractDatastore implements DataStoreInterface {
 class Datastore implements AbstractDatastore {
     ohlcv: number[][];
     contractedOrders: Map<string, Order> = new Map();
-    preparedOrders2: Map<string, Order> = new Map();
-    activeOrders2: Map<string, Order> = new Map();
-    position = {
+    preparedOrders: Map<string, Order> = new Map();
+    activeOrders: Map<string, Order> = new Map();
+    position: Position = {
         symbol: '',
         side: '',
-        amount: 1,
-        amountUSD: 1,
-        avgOpenPrice: 1,
-        breakEvenPrice: 1,
+        amount: 0,
+        amountUSD: 0,
+        avgOpenPrice: undefined,
+        breakEvenPrice: undefined,
     }
-    updateOrderStatus(): void {
-        const iterator: IterableIterator<[string, Order]> = this.activeOrders2.entries();
+    public updateOrderStatus(): void {
+        const iterator: IterableIterator<[string, Order]> = this.activeOrders.entries();
         for (const [key, order] of iterator) {
-            if (!this.activeOrders2.has(key)) {
-                console.log('[Error]:');
-                continue;
-            }
-            if (order['status'] == 'open') {
-                // this.activeOrders2.set(key, order);
-            }
             if (order['status'] == 'closed') {
-                this.activeOrders2.delete(key);
+                this.activeOrders.delete(key);
                 this.contractedOrders.set(key, order);
-                // this.setPosition(order);
             }
             if (order['status'] == 'canceled') {
-                this.activeOrders2.delete(key);
+                this.activeOrders.delete(key);
             }
-
         }
+        this.setPosition();
     }
-    setPreparedOrders(orders): void {
+    public setPreparedOrders(orders): void {
         for (const order of orders) {
             const key = order['orderName'];
-            if (this.activeOrders2.has(key)) {
+            if (this.activeOrders.has(key)) {
                 console.log(`[Info]:skipped. Order<${key}> is already open...`);
                 continue;
             }
-            this.preparedOrders2.set(key, order)
+            this.preparedOrders.set(key, order)
         }
     }
-    updatePreparedOrders(): void {
-        const orders = this.preparedOrders2.values()
+    public updatePreparedOrders(): void {
+        const orders = this.preparedOrders.values()
         for (const order of orders) {
             const key = order['orderName'];
             if (order.status == 'open') {
-                this.activeOrders2.set(key, order);
-                this.preparedOrders2.delete(key);
+                this.activeOrders.set(key, order);
+                this.preparedOrders.delete(key);
             }
             if (order.status == 'closed') {
                 this.contractedOrders.set(key, order);
-                this.activeOrders2.delete(key);
-                this.preparedOrders2.delete(key);
+                this.activeOrders.delete(key);
+                this.preparedOrders.delete(key);
             }
             if (order.status == 'canceled') {
-                this.activeOrders2.delete(key);
-                this.preparedOrders2.delete(key);
+                this.activeOrders.delete(key);
+                this.preparedOrders.delete(key);
             }
         }
     }
@@ -122,10 +116,10 @@ class Datastore implements AbstractDatastore {
     //         this.activeOrders2.delete(order.orderName);
     //     }
     // }
-    getActiveOrders() { return this.activeOrders2 }
-    getExpiredOrders(): Order[] {
+    public getActiveOrders() { return this.activeOrders }
+    public getExpiredOrders(): Order[] {
         const expiredOrders = [];
-        for (const value of this.activeOrders2.values()) {
+        for (const value of this.activeOrders.values()) {
             console.log(` ${value}`);
             if (value['expiracy'] >= Date.now()) {
                 expiredOrders.push(value);
@@ -133,23 +127,20 @@ class Datastore implements AbstractDatastore {
         }
         return expiredOrders;
     }
-    getPreparedOrders(): Map<string, Order> { return this.preparedOrders2 }
-    setPosition() {
+    public getPreparedOrders(): Map<string, Order> { return this.preparedOrders }
+    public setPosition() {
         const orders = this.contractedOrders.values();
         for (const order of orders) {
-            if (order.side == this.position.side) {
-                this.position.amount += order.amount;
-            }
+            if (this.position.symbol != order.symbol) continue;
+            const prevAmount = this.position.amount;
+            this.position.amount += (order.side == this.position.side) ? order.amount : -order.amount;
+            this.position.avgOpenPrice = (this.position.avgOpenPrice * prevAmount + order.price * order.amount) / this.position.amount;
+            this.position.amountUSD = this.position.amount * this.position.avgOpenPrice;
         }
         this.contractedOrders.clear();
     }
-    getPosition() {
-        // ave_open_price
-    }
+    public getPosition() { return this.position; }
     public getOHCV(): number[][] { return this.ohlcv }
-    public pendingOrderCount(): number {
-        return this.activeOrders2.size + this.preparedOrders2.size || 0;
-    }
     public setOHLCV(ohlcv) {
         this.ohlcv = ohlcv;
     }

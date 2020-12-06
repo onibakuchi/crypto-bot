@@ -1,6 +1,6 @@
 import { AbstractClassExchange } from './Exchanges';
 import { Strategy } from './Strategy';
-import { DataStoreInterface, Order } from './DataStore';
+import { DatastoreInterface, Order } from './Datastore';
 
 export abstract class BaseComponentBot {
     protected mediator: Mediator;
@@ -23,7 +23,7 @@ export class ConcreteMediator2 implements Mediator {
     private exchangeapi: AbstractClassExchange;
     private component2: AbstractClassExchange;
     private strategies: Strategy[];
-    private dataStore: DataStoreInterface
+    private datastore: DatastoreInterface
     constructor() {
         this.exchangeapi.setMediator(this);
         this.component2.setMediator(this);
@@ -31,10 +31,10 @@ export class ConcreteMediator2 implements Mediator {
     public notify(sender: object, event: string): void { }
     public dataStoreMethods(methodName) {
         const methods = {
-            ohlcv: this.dataStore.getOHCV,
-            activeOrders: this.dataStore.getActiveOrders,
-            position: this.dataStore.getPosition,
-            order: this.dataStore.setPreparedOrders,
+            ohlcv: this.datastore.getOHCV,
+            activeOrders: this.datastore.getActiveOrders,
+            position: this.datastore.getPosition,
+            order: this.datastore.setPreparedOrders,
         }
         return methods[methodName]
     }
@@ -51,12 +51,12 @@ export class ConcreteMediator2 implements Mediator {
     }
     private async setOHLCV() {
         const ohlcv = await this.exchangeapi.fetchOHLCV('USD', '1h', 1, 1, 1)
-        this.dataStore.setOHLCV(ohlcv);
+        this.datastore.setOHLCV(ohlcv);
     }
     private async updateStatus() {
-        const values = this.dataStore.getActiveOrders().values()
+        const values = this.datastore.getActiveOrders().values()
         await this.exchangeapi.fetchOrders(values)
-        this.dataStore.updateOrderStatus();
+        this.datastore.updateOrderStatus();
 
         /* db???
         Mapnoのキーとidが違うので，idToOrderNameかdbの検索をすることでid=>keyを手に入れる必要がある
@@ -69,14 +69,14 @@ export class ConcreteMediator2 implements Mediator {
     private exeStrategy() {
         for (const strategy of this.strategies) {
             const orders = strategy.strategy()
-            this.dataStore.setPreparedOrders(orders)
+            this.datastore.setPreparedOrders(orders)
         }
     }
     public async order() {
-        const orders = this.dataStore.getPreparedOrders()
+        const orders = this.datastore.getPreparedOrders()
         try {
             await this.exchangeapi.createOrders(orders);
-            this.dataStore.updatePreparedOrders()
+            this.datastore.updatePreparedOrders()
         } catch (e) { }
         // for (const order of orders) {
         //     try {
@@ -91,7 +91,7 @@ export class ConcreteMediator2 implements Mediator {
     }
     public async cancel() {
         try {
-            const expiredOrders = this.dataStore.getExpiredOrders()
+            const expiredOrders = this.datastore.getExpiredOrders()
             await this.exchangeapi.cancelOrders(expiredOrders)
         } catch (e) { }
         // for (const order of expiredOrders) {
