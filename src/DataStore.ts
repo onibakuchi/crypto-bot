@@ -21,16 +21,16 @@ interface Position {
     breakEvenPrice: number | undefined,
 }
 export interface DatastoreInterface {
-    getOHCV(): number[][]
-    getPreparedOrders()
+    getOHCV(): number[][];
+    getPreparedOrders(): Map<string, Order>;
     getActiveOrders(): Map<string, Order>;
-    getExpiredOrders(): Order[]
+    getExpiredOrders(): Order[];
 
-    updateOrderStatus(): void
-    updatePreparedOrders(): void
-    setPreparedOrders(orders: Order[]): void
-    setOHLCV(ohlcv): void
-    getPosition(): Position
+    updateOrderStatus(): void;
+    updatePreparedOrders(): void;
+    setPreparedOrders(orders: Order[]): void;
+    setOHLCV(ohlcv: number[][]): void;
+    getPosition(): Position;
 }
 
 abstract class AbstractDatastore implements DatastoreInterface {
@@ -41,9 +41,7 @@ abstract class AbstractDatastore implements DatastoreInterface {
     position: Position;
 
     public getOHCV(): number[][] { return this.ohlcv }
-    public setOHLCV(ohlcv) {
-        this.ohlcv = ohlcv;
-    }
+    public setOHLCV(ohlcv) { return this.ohlcv = ohlcv; }
     public abstract getPreparedOrders(): Map<string, Order>
     public abstract getActiveOrders(): Map<string, Order>
     public abstract getExpiredOrders(): Order[]
@@ -53,8 +51,10 @@ abstract class AbstractDatastore implements DatastoreInterface {
     public abstract setPreparedOrders(orders: Order[]): void
     public abstract getPosition(): Position
     public abstract setPosition(): void
+    public abstract hook()
+    public abstract init()
 }
-class Datastore implements AbstractDatastore {
+export class Datastore implements AbstractDatastore {
     ohlcv: number[][];
     contractedOrders: Map<string, Order> = new Map();
     preparedOrders: Map<string, Order> = new Map();
@@ -67,15 +67,20 @@ class Datastore implements AbstractDatastore {
         avgOpenPrice: undefined,
         breakEvenPrice: undefined,
     }
+    public init() { }
+    public hook() { }
     public updateOrderStatus(): void {
+        console.log('[Info]:Calling function updateOrderStatus...');
         const iterator: IterableIterator<[string, Order]> = this.activeOrders.entries();
         for (const [key, order] of iterator) {
             if (order['status'] == 'closed') {
                 this.activeOrders.delete(key);
                 this.contractedOrders.set(key, order);
+                console.log(`[Info]: Contracted Order<${order}> `);
             }
             if (order['status'] == 'canceled') {
                 this.activeOrders.delete(key);
+                console.log(`[Info]: Canceled Order<${order}> `);
             }
         }
         this.setPosition();
@@ -84,7 +89,7 @@ class Datastore implements AbstractDatastore {
         for (const order of orders) {
             const key = order['orderName'];
             if (this.activeOrders.has(key)) {
-                console.log(`[Info]:skipped. Order<${key}> is already open...`);
+                console.log(`[Info]:skipped... Order<${key}> is already open...`);
                 continue;
             }
             this.preparedOrders.set(key, order)
@@ -129,6 +134,7 @@ class Datastore implements AbstractDatastore {
     }
     public getPreparedOrders(): Map<string, Order> { return this.preparedOrders }
     public setPosition() {
+        console.log('[Info]: Updating position....');
         const orders = this.contractedOrders.values();
         for (const order of orders) {
             if (this.position.symbol != order.symbol) continue;
@@ -138,10 +144,11 @@ class Datastore implements AbstractDatastore {
             this.position.amountUSD = this.position.amount * this.position.avgOpenPrice;
         }
         this.contractedOrders.clear();
+        console.log('[Info]: Done updating position....');
     }
     public getPosition() { return this.position; }
     public getOHCV(): number[][] { return this.ohlcv }
-    public setOHLCV(ohlcv) {
+    public setOHLCV(ohlcv: number[][]) {
         this.ohlcv = ohlcv;
     }
 }

@@ -2,6 +2,10 @@ import { BaseComponentBot } from './Mediator';
 import { Order } from './Datastore';
 
 abstract class AbstractStrategy extends BaseComponentBot {
+    // protected mediator: Mediator;
+    // constructor(mediator) {
+    //     super(mediator);
+    // }
     public strategy(): Order[] {
         const pyraminding = 0;
         const orders2 = [];
@@ -17,6 +21,7 @@ abstract class AbstractStrategy extends BaseComponentBot {
         // this.mediator.dataStoreMethods('order')(orders2)
         return orders2
     }
+    // protected GenOrder(name, side, ordType, price, expiracy, params) { }
     protected abstract exit()
     protected abstract algorithym()
     protected abstract hookWhenHavePosi()
@@ -30,7 +35,7 @@ export class Strategy extends AbstractStrategy {
     }
     protected algorithym() {
         //  Non Reduce Only
-        const order = {
+        const orderTemplete = {
             orderName: '',
             id: 0,
             symbol: '',
@@ -42,9 +47,26 @@ export class Strategy extends AbstractStrategy {
         }
         const amounts = this.setAmounts()
         const prices = this.setPrices();
+        const order = this.testAlogo();
         return order;
     }
     public hookWhenHavePosi() { }
     protected setAmounts() { }
     protected setPrices() { }
+    private testAlogo() {
+        const order: Order = {
+            orderName: 'testOrder',
+            id: '',
+            symbol: 'ETH-PERP',
+            timestamp: 0,
+            type: 'limit',
+            side: "buy",
+            status: '',
+            amount: 0.001,
+            price: Math.random() * 30 + 450,
+            params: {},
+            expiracy: Date.now() + 3600 * 1000,
+        }
+        return order
+    }
 }

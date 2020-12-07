@@ -2,10 +2,10 @@
   "name": "catch-bot-v2",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx ts-node src/arbitrage/arbitrage.ts"
+    "start": "npx ts-node -r dotenv/config src/index.ts"
   },
   "author": "",
   "license": "ISC",

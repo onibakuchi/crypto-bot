@@ -3,9 +3,10 @@ import { Order } from './Datastore';
 import { BaseComponentBot, Mediator } from './Mediator';
 import config from './config';
 
-export abstract class AbstractClassExchange extends BaseComponentBot {
+export abstract class AbstractExchange extends BaseComponentBot {
     protected CCXT: CCXT.Exchange;
     protected abstract exchangeId: string;
+    private maxRetry: number = 1;
     constructor(mediator: Mediator = null) {
         super(mediator);
     }
@@ -48,38 +49,47 @@ export abstract class AbstractClassExchange extends BaseComponentBot {
         }
         return order
     }
-    public async createOrders(orders: Order[], counts = 0): Promise<Order[]> {
+    public async createOrders(orders: IterableIterator<Order>, counts?: number): Promise<Order[]>
+    public async createOrders(orders: Order[], counts?: number): Promise<Order[]>
+    public async createOrders(orders: any, counts = 0): Promise<Order[]> {
+        console.log('[Info]:Calling function createOrders...');
         for (const order of orders) {
             try {
-                const { id, symbol, type, side, amount, price, params } = order;
+                const { id: id, symbol: symbol, type: type, side: side, amount: amount, price: price, params: params } = order;
                 await new Promise((resolve) => setTimeout(resolve, 1000))
                 const res = await this.CCXT.createOrder(symbol, type, side, amount, price, params);
                 this.updateOrder(order, res);
-                console.log('order :>> ', order);
+                console.log(`[Info]:Success... Created a order Order<${order}>`);
             } catch (e) {
                 console.log('[ERROR]:function CreateOrders\n', e);
-                if (counts <= 1) {
+                if (counts >= this.maxRetry) {
+                    console.log('[ERROR]:Retry Failed');
+                } else {
                     console.log('[Info]:Retry...');
-                    await this.createOrders([order], counts++);
-                } else console.log('[ERROR]:Retry Failed');
+                    await this.createOrders([order], counts + 1);
+                }
+                // if (counts <= this.maxRetry) {
+                //     console.log('[Info]:Retry...');
+                //     await this.createOrders([order], counts++);
+                // } else console.log('[ERROR]:Retry Failed');
             }
         }
         return orders
     }
     public async cancelOrder(e: Error, order: Order) { }
     public async cancelOrders(orders: Order[], counts = 0): Promise<Order[]> {
+        console.log('[Info]:Calling function cancelOrders...');
         for (const order of orders) {
             try {
                 const { id, symbol, type, side, amount, price, params } = order;
                 await new Promise((resolve) => setTimeout(resolve, 1000))
                 const res = await this.CCXT.cancelOrder(id, symbol, params);
-                console.log('[Info]:await this.ccxt.cancelOrder :>> ', res);
                 this.updateOrder(order, res);
-                console.log('order :>> ', order);
             } catch (e) {
-                if (counts <= 1) {
+                console.log('[ERROR]:function cancelOrders\n', e);
+                if (counts <= this.maxRetry) {
                     console.log('[Info]:Retry...');
-                    await this.cancelOrders([order], counts++);
+                    await this.cancelOrders([order], counts + 1);
                 } else console.log('[ERROR]:Retry Failed');
             }
         }
@@ -90,8 +100,8 @@ export abstract class AbstractClassExchange extends BaseComponentBot {
             return await this.CCXT.fetchOHLCV(symbol, timeframe, since, limit, params);
         } catch (e) {
             console.log('[ERROR]:function fetchOHLCV', e);
-            if (counts <= 1) {
-                await this.fetchOHLCV(symbol, timeframe, since, limit, params, counts++);
+            if (counts <= this.maxRetry) {
+                await this.fetchOHLCV(symbol, timeframe, since, limit, params, counts + 1);
                 console.log('[Info]:Retry...');
             } else console.log('[ERROR]:Retry Failed');
         }
@@ -105,12 +115,11 @@ export abstract class AbstractClassExchange extends BaseComponentBot {
                 await new Promise((resolve) => setTimeout(resolve, 1000))
                 const res = await this.CCXT.fetchOrder(id, symbol, params);
                 this.updateOrder(order, res);
-                console.log('order :>> ', order);
             } catch (e) {
                 console.log('[ERROR]:function fetchOrders\n', e);
-                if (counts <= 1) {
+                if (counts <= this.maxRetry) {
                     console.log('[Info]:Retry...');
-                    await this.fetchOrders([order], counts++);
+                    await this.fetchOrders([order], counts + 1);
                 } else console.log('[ERROR]:Retry Failed');
             }
         }
@@ -118,16 +127,15 @@ export abstract class AbstractClassExchange extends BaseComponentBot {
     }
 }
 
-class BitBank extends AbstractClassExchange {
+class BitBank extends AbstractExchange {
     protected exchangeId = 'bitbank';
     constructor(mediator = null) {
         super(mediator);
         this.setCCXT();
     }
-    protected handleError() { }
 }
 
-class FTX extends AbstractClassExchange {
+class FTX extends AbstractExchange {
     protected exchangeId: string = 'ftx';
     constructor(mediator = null) {
         super(mediator);
@@ -138,9 +146,6 @@ class FTX extends AbstractClassExchange {
         source.id && (target.id = source.id);
         source.timestamp && (target.timestamp = source.timestamp);
     }
-    protected handleError(e: Error, order: Order): void {
-        if (e.name == 'InvalidOrder') { }
-    }
 }
 
 const ExchangeRepositories = {
@@ -149,7 +154,7 @@ const ExchangeRepositories = {
 }
 
 export const ExchangeRepositoryFactory = {
-    get: name => ExchangeRepositories[name]
+    get: (name: string) => ExchangeRepositories[name]
 };
 
 
@@ -157,7 +162,7 @@ export const ExchangeRepositoryFactory = {
     const symbol = 'ETH-PERP'
     const timeframe = '1h'
     const since = Date.now() - 3 * 3600 * 1000
-    const ftx = new ExchangeRepositories['ftx']()
+    // const ftx = new ExchangeRepositories['ftx']()
     const order: Order = {
         orderName: 'test',
         id: '16962050770',
@@ -173,7 +178,7 @@ export const ExchangeRepositoryFactory = {
     }
     // console.log('await  ftx.fetchOHLCV() :>> ', await ftx.fetchOHLCV(symbol, timeframe, since,));
     // await ftx.createOrders([order])
-    await ftx.fetchOrders([order])
+    // await ftx.fetchOrders([order])
     // await ftx.cancelOrders([order])
 
     // await ftx.cancelOrders([order])

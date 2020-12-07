@@ -1,5 +1,5 @@
-import { ConcreteMediator2 } from './Mediator';
-import { AbstractClassExchange, ExchangeRepositoryFactory } from './Exchanges';
+import { Bot } from './Mediator';
+import { AbstractExchange, ExchangeRepositoryFactory } from './Exchanges';
 
 const event = {
     event: '',
@@ -18,12 +18,12 @@ const states = {
 }
 const transite = state => states[state]
 
-const mediater = new ConcreteMediator2()
-console.log('Same client code can work with different subclasses:');
-const ftxInstance = new (ExchangeRepositoryFactory.get('ftx'))()
-mediater.setExchange(ftxInstance);
+// const mediater = new Bot()
+// console.log('Same client code can work with different subclasses:');
+// const ftxInstance = new (ExchangeRepositoryFactory.get('ftx'))()
+// mediater.setExchange(ftxInstance);
 
-function bot(abstractClass: AbstractClassExchange) {
+function bot(abstractClass: AbstractExchange) {
     let symbol, timeframe, since, limit, params;
     abstractClass.fetchOHLCV(symbol, timeframe, since, limit, params);
 }
