@@ -12,7 +12,7 @@ export interface Order {
     price: number;
     params: {};
 }
-interface Position {
+export interface Position {
     symbol: string
     side: string
     amount: number
@@ -76,23 +76,27 @@ export class Datastore implements AbstractDatastore {
             if (order['status'] == 'closed') {
                 this.activeOrders.delete(key);
                 this.contractedOrders.set(key, order);
-                console.log(`[Info]: Contracted Order<${order}> `);
+                console.log('[Info]: Contracted Order<Order>', order);
             }
             if (order['status'] == 'canceled') {
                 this.activeOrders.delete(key);
-                console.log(`[Info]: Canceled Order<${order}> `);
+                console.log('[Info]: Canceled Order<Order>', order);
             }
         }
         this.setPosition();
     }
-    public setPreparedOrders(orders): void {
+    public setPreparedOrders(orders: Order[]): void {
         for (const order of orders) {
-            const key = order['orderName'];
-            if (this.activeOrders.has(key)) {
-                console.log(`[Info]:skipped... Order<${key}> is already open...`);
-                continue;
+            if (order) {
+                const key = order['orderName'];
+                if (this.activeOrders.has(key)) {
+                    console.log(`[Info]:skipped... Order<${key}> is already open...`);
+                    continue;
+                }
+                this.preparedOrders.set(key, order)
+            } else {
+                console.log('[ERROR]: Uncompatible to Order Interface\n <Order> :>>',order);
             }
-            this.preparedOrders.set(key, order)
         }
     }
     public updatePreparedOrders(): void {

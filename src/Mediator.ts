@@ -1,6 +1,6 @@
 import { AbstractExchange } from './Exchanges';
 import { Strategy } from './Strategy';
-import { DatastoreInterface, Order } from './Datastore';
+import { DatastoreInterface, Order, Position } from './Datastore';
 
 export abstract class BaseComponentBot {
     protected mediator: Mediator;
@@ -15,7 +15,7 @@ export abstract class BaseComponentBot {
 }
 
 export interface Mediator {
-    dataStoreMethods(methodName): any
+    dataStoreMethods(methodName: string): any
 }
 
 export class Bot implements Mediator {
@@ -39,26 +39,32 @@ export class Bot implements Mediator {
             _strategies.forEach(el => this.strategies.push(new el(this)));
         }
     }
-    public dataStoreMethods(methodName) {
+    public dataStoreMethods(methodName: string): {
+        ohlcv: () => number[][];
+        activeOrders: () => IterableIterator<Order>;
+        position: () => Position;
+        order: (order: Order[]) => void;
+    } {
         const methods = {
             ohlcv: this.datastore.getOHCV,
-            activeOrders: this.datastore.getActiveOrders,
+            activeOrders: this.datastore.getActiveOrders().values,
             position: this.datastore.getPosition,
             order: this.datastore.setPreparedOrders,
         }
         return methods[methodName]
     }
+    public getDatastore() { return this.datastore }
     public async main() {
         if (
             this.datastore == undefined
             || this.exchangeapi == undefined
             || this.strategies.length == 0
         ) throw Error('[ERROR]: UNDEFINED_EXCHANGE_API_OR_DARASTORE');
+        // this.setActiveOrders();//FOR TEST
         await this.setOHLCV();
         await this.updateStatus();
         this.exeStrategy()
         await this.order()
-        return
         await this.cancel()
     }
     private async setOHLCV() {
@@ -67,9 +73,11 @@ export class Bot implements Mediator {
         console.log('[Info] OHLCV :>> ', ohlcv);
     }
     private async updateStatus() {
+        console.log('[Info]:Process: Updating order status...');
         const values = this.datastore.getActiveOrders().values()
         await this.exchangeapi.fetchOrders(values)
         this.datastore.updateOrderStatus();
+        console.log('[Info]:Process: Done Updating order status...');
         /* db???
         Mapnoのキーとidが違うので，idToOrderNameかdbの検索をすることでid=>keyを手に入れる必要がある
          */
@@ -90,8 +98,7 @@ export class Bot implements Mediator {
                     this.datastore.setPreparedOrders(orders)
                     console.log('[Info]: Done excuting a strategy...');
                 } catch (e) {
-                    console.log('[ERROR]:ERROR_WHILE_EXCUTING_STRATEGY');
-                    console.log('e :>> ', e);
+                    console.log('[ERROR]:ERROR_WHILE_EXCUTING_STRATEGY', e);
                 }
             }
         }
@@ -100,9 +107,10 @@ export class Bot implements Mediator {
     public async order() {
         try {
             console.log('[Info]: Try to order...');
-            const ordresMap = this.datastore.getPreparedOrders();
-            await this.exchangeapi.createOrders(ordresMap.values());
+            const values = this.datastore.getPreparedOrders().values();
+            await this.exchangeapi.createOrders(values);
             this.datastore.updatePreparedOrders();
+            console.log('[Info]: Done order...');
         } catch (e) {
             console.log('e :>> ', e);
         }
@@ -111,7 +119,10 @@ export class Bot implements Mediator {
         try {
             console.log('[Info]: Try to cancel order...');
             const expiredOrders = this.datastore.getExpiredOrders()
-            await this.exchangeapi.cancelOrders(expiredOrders)
+            if (expiredOrders.length > 1) {
+                await this.exchangeapi.cancelOrders(expiredOrders)
+            } else console.log('[Info]: No expired order...');
+            console.log('[Info]: Done cancel expired orders...');
         } catch (e) {
             console.log('e :>> ', e);
         }
@@ -124,5 +135,22 @@ export class Bot implements Mediator {
         //     }
         // }
         // this.dataStore.deleteActiveOrders('key', canceled)
+    }
+    private setActiveOrders() {
+        // FOR_TEST
+        const test: Order = {
+            orderName: 'expectDeleted',
+            id: '17173028975',
+            symbol: 'ETH-PERP',
+            timestamp: 1607426266792,
+            type: 'limit',
+            side: 'buy',
+            status: 'open',
+            amount: 0.001,
+            price: 466.8516549287449,
+            params: {},
+            expiracy: Date.now() - 3600 * 1000
+        }
+        this.datastore.getActiveOrders().set('expectDeleted', test)
     }
 }

@@ -8,32 +8,28 @@ abstract class AbstractStrategy extends BaseComponentBot {
     // }
     public strategy(): Order[] {
         const pyraminding = 0;
-        const orders2 = [];
-        const activeOrders = this.mediator.dataStoreMethods('activeOrders');
+        const orders2: Order[] = [];
+        // const activeOrders = this.mediator.dataStoreMethods('activeOrders');
         const position = this.mediator.dataStoreMethods('position')
 
-        if (position > 1000) {
-            orders2.push(this.hookWhenHavePosi());
-            if (activeOrders.size >= 3) return
+        if (position.amountUSD > 0) {
+            orders2.push(...this.hookWhenHavePosi());
+            // if (activeOrders.size >= 3) return
         }
+        // console.log('activeOrders :>> ', activeOrders);
         // すでに約定していてポジションを持っている時かつPyraminging 数>1のとき
-        orders2.push(this.algorithym());
+        orders2.push(...this.algorithym());
+        console.log('order2 :>> ', orders2);
         // this.mediator.dataStoreMethods('order')(orders2)
         return orders2
     }
     // protected GenOrder(name, side, ordType, price, expiracy, params) { }
-    protected abstract exit()
-    protected abstract algorithym()
-    protected abstract hookWhenHavePosi()
+    protected abstract exit(): Order[]
+    protected abstract algorithym(): Order[]
+    protected abstract hookWhenHavePosi(): Order[]
 }
 export class Strategy extends AbstractStrategy {
-
-    protected exit() {
-        //Reduce Only
-        const orders = [];
-        return orders
-    }
-    protected algorithym() {
+    protected algorithym(): Order[] {
         //  Non Reduce Only
         const orderTemplete = {
             orderName: '',
@@ -50,12 +46,17 @@ export class Strategy extends AbstractStrategy {
         const order = this.testAlogo();
         return order;
     }
-    public hookWhenHavePosi() { }
+    protected exit() {
+        //Reduce Only
+        const orders = [];
+        return orders
+    }
+    protected hookWhenHavePosi(): Order[] { return }
     protected setAmounts() { }
     protected setPrices() { }
-    private testAlogo() {
+    private testAlogo(): Order[] {
         const order: Order = {
-            orderName: 'testOrder',
+            orderName: 'testOrder1',
             id: '',
             symbol: 'ETH-PERP',
             timestamp: 0,
@@ -67,6 +68,6 @@ export class Strategy extends AbstractStrategy {
             params: {},
             expiracy: Date.now() + 3600 * 1000,
         }
-        return order
+        return [order]
     }
 }

@@ -55,13 +55,18 @@ export abstract class AbstractExchange extends BaseComponentBot {
         console.log('[Info]:Calling function createOrders...');
         for (const order of orders) {
             try {
-                const { id: id, symbol: symbol, type: type, side: side, amount: amount, price: price, params: params } = order;
+                const { id, symbol, type, side, amount, price, params } = order;
+                if (symbol == undefined) throw TypeError('BadSymbol:symbol is undefined');
                 await new Promise((resolve) => setTimeout(resolve, 1000))
                 const res = await this.CCXT.createOrder(symbol, type, side, amount, price, params);
                 this.updateOrder(order, res);
-                console.log(`[Info]:Success... Created a order Order<${order}>`);
+                console.log('[Info]:Success... Created a order <Order> :>>', order);
             } catch (e) {
                 console.log('[ERROR]:function CreateOrders\n', e);
+                if (e instanceof TypeError) {
+                    console.log('[ERROR]: INVALID_ORDER_PROPERTY <Order>:>>', order);
+                    continue;
+                }
                 if (counts >= this.maxRetry) {
                     console.log('[ERROR]:Retry Failed');
                 } else {
@@ -85,6 +90,7 @@ export abstract class AbstractExchange extends BaseComponentBot {
                 await new Promise((resolve) => setTimeout(resolve, 1000))
                 const res = await this.CCXT.cancelOrder(id, symbol, params);
                 this.updateOrder(order, res);
+                console.log('[Info]: Success.. Canceled order <Order>', order);
             } catch (e) {
                 console.log('[ERROR]:function cancelOrders\n', e);
                 if (counts <= this.maxRetry) {
@@ -109,6 +115,7 @@ export abstract class AbstractExchange extends BaseComponentBot {
     public async fetchOrders(orders: IterableIterator<Order>, counts?: number): Promise<Order[]>
     public async fetchOrders(orders: Order[], counts?: number): Promise<Order[]>
     public async fetchOrders(orders: any, counts = 0): Promise<Order[]> {
+        console.log(`[Info]: calling active orders status under the managment...`);
         for (const order of orders) {
             try {
                 const { id, symbol, type, side, amount, price, params } = order;

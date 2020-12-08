@@ -31,7 +31,6 @@ const run = (func, sec) => {
         params: {},
         expiracy: Date.now(),
     }
-    console.log('order :>> ', order);
     // console.log('await  ftx.fetchOHLCV() :>> ', await ftx.fetchOHLCV(symbol, timeframe, since,));
     // await ftx.fetchOrders([order])
 
