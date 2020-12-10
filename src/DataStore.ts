@@ -2,7 +2,7 @@
 export interface Order {
     orderName: string;
     id: string;
-    expiracy: number;
+    expiration: number;
     status: string;
     symbol: string;
     type: string;
@@ -68,8 +68,9 @@ export class Datastore implements AbstractDatastore {
         avgOpenPrice: undefined,
         breakEvenPrice: undefined,
     }
-    public init() { }
-    private setDB(db) { this.db = db; }
+    public init() {
+
+    }
     public hook() { }
     public updateOrderStatus(): void {
         console.log('[Info]:Calling function updateOrderStatus...');
@@ -132,7 +133,7 @@ export class Datastore implements AbstractDatastore {
         const expiredOrders = [];
         for (const value of this.activeOrders.values()) {
             console.log(` ${value}`);
-            if (value['expiracy'] <= Date.now()) {
+            if (value['expiration'] <= Date.now()) {
                 expiredOrders.push(value);
             }
         }

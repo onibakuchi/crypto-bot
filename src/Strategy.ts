@@ -1,8 +1,8 @@
-import { BaseComponentBot } from './Mediator';
+import { BaseComponent } from './Mediator';
 import { Order, Position } from './Datastore';
 import CONFIG from './config';
 
-abstract class AbstractStrategy extends BaseComponentBot {
+abstract class AbstractStrategy extends BaseComponent {
     protected PYRAMIDING: number;
     protected MAX_ACTIVE_ORDERS: number;
     protected MAX_LEVERAGE: number;
@@ -18,14 +18,15 @@ abstract class AbstractStrategy extends BaseComponentBot {
         const activeOrdMap = datastore.getActiveOrders()
         const ohlcv = datastore.getOHCV();
         const position = datastore.getPosition();
-        const algorithym = this.IS_PRODUCTION_MODE ? this.algorithym : this.testAlgorithym;
 
         if (position.amountUSD > 0) {
             newOrders.push(...this.hookWhenHavePosi());
             if (activeOrdMap.size >= 3) return newOrders
         }
         // すでに約定していてポジションを持っている時かつPyraminging 数>1のとき
-        newOrders.push(...algorithym(ohlcv, position));
+        const result = this.IS_PRODUCTION_MODE ? this.algorithym(ohlcv, position) : this.testAlgorithym(ohlcv, position);
+        newOrders.push(...result);
+
         console.log('newOrders :>> ', newOrders);
         return newOrders
     }
@@ -38,8 +39,8 @@ abstract class AbstractStrategy extends BaseComponentBot {
     }
     protected abstract algorithym(ohlcv: number[][], potision: Position, params?): Order[]
     protected abstract testAlgorithym(ohlcv: number[][], position: Position): Order[]
-    protected abstract exit(): Order[]
     protected abstract hookWhenHavePosi(): Order[]
+    protected abstract exit(): Order[]
 }
 export class Strategy extends AbstractStrategy {
     protected algorithym(ohlcv: number[][], position: Position): Order[] {
@@ -57,7 +58,7 @@ export class Strategy extends AbstractStrategy {
             timestamp: 0,
             price: 0,
             params: {},
-            expiracy: 10,
+            expiration: 10,
         }
         const ord1 = this.order('hige5%', 'buy', 0.001, ohlcv[ohlcv.length - 2][4] * 0.95, 10 * 60)
         const ord15 = this.order('hige5.8%', 'buy', 0.003, ohlcv[ohlcv.length - 1][4] * 0.942)
@@ -72,7 +73,7 @@ export class Strategy extends AbstractStrategy {
         const orders = [];
         return orders
     }
-    private order(name, side, amount, price, expiracy = 10 * 60, params = {}) {
+    private order(name, side, amount, price, duration = 10 * 60, params = {}) {
         const template: Order = {
             orderName: name,
             id: '',
@@ -84,7 +85,7 @@ export class Strategy extends AbstractStrategy {
             timestamp: 0,
             price: price,
             params: params,
-            expiracy: Date.now() + expiracy * 1000,
+            expiration: Date.now() + duration * 1000,
         }
         const ord = Object.assign({}, template);
         return ord;
@@ -93,19 +94,7 @@ export class Strategy extends AbstractStrategy {
     protected setAmounts() { }
     protected setPrices() { }
     protected testAlgorithym(ohlcv: number[][], position: Position): Order[] {
-        const order: Order = {
-            orderName: 'testOrder1',
-            id: '',
-            symbol: 'ETH-PERP',
-            timestamp: 0,
-            type: 'limit',
-            side: "buy",
-            status: '',
-            amount: 0.001,
-            price: Math.random() * 30 + 450,
-            params: {},
-            expiracy: Date.now() + 3600 * 1000,
-        }
+        const order: Order = this.order('testOrder1', 'buy', 0.001, Math.random() * 30 + 430)
         return [order]
     }
 }

@@ -1,9 +1,9 @@
 import CCXT from 'ccxt';
 import { Order } from './Datastore';
-import { BaseComponentBot, Mediator } from './Mediator';
+import { BaseComponent, Mediator } from './Mediator';
 import config from './config';
 
-export abstract class AbstractExchange extends BaseComponentBot {
+export abstract class AbstractExchange extends BaseComponent {
     protected CCXT: CCXT.Exchange;
     protected abstract exchangeId: string;
     private maxRetry: number = 1;
@@ -187,7 +187,7 @@ export const ExchangeRepositoryFactory = {
         amount: 0.001,
         price: Math.random() * 30 + 450,
         params: {},
-        expiracy: Date.now(),
+        expiration: Date.now(),
     }
     // console.log('await  ftx.fetchOHLCV() :>> ', await ftx.fetchOHLCV(symbol, timeframe, since,));
     // await ftx.createOrders([order])

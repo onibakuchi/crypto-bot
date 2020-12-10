@@ -1,0 +1,12 @@
+version: "3"
+services:
+  gcloud:
+    build:
+      context: ./docker/gcloud
+      dockerfile: Dockerfile
+    tty: true
+    environment:
+      DATASTORE_PROJECT_ID: app
+      DATASTORE_LISTEN_ADDRESS: 0.0.0.0:8081
+    ports:
+      - "8081:8081"

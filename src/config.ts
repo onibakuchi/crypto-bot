@@ -18,6 +18,7 @@ export default CONFIG = {
         "MAX_ACTIVE_ORDERS": process.env.MAX_ACTIVE_ORDERS,
         "MAX_LEVERAGE": process.env.MAX_LEVERAGE,
         "PYRAMIDING": process.env.PYRAMIDING,
+        "TIMEFRAME": process.env.TIMEFRAME,
     },
     "LINE": {
         "BEARER_ACCESS_TOKEN": process.env.BEARER_ACCESS_TOKEN,

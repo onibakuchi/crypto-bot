@@ -30,13 +30,13 @@ const run = (func, sec) => {
         amount: 0.001,
         price: Math.random() * 30 + 450,
         params: {},
-        expiracy: Date.now(),
+        expiration: Date.now(),
     }
     // console.log('await  ftx.fetchOHLCV() :>> ', await ftx.fetchOHLCV(symbol, timeframe, since,));
     // await ftx.fetchOrders([order])
 
     //
-    const instance = new Bot(CONFIG.TRADE.TRADE_ENV, CONFIG.TRADE.SYMBOL, FTX)
+    const instance = new Bot(FTX)
     instance.setStrategy([Strategy])
     instance.setDatastore(Datastore)
     await instance.main()

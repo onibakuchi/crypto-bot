@@ -1,8 +1,9 @@
 import { AbstractExchange } from './Exchanges';
 import { Strategy } from './Strategy';
 import { DatastoreInterface, Order, Position } from './Datastore';
+import CONFIG from './config';
 
-export abstract class BaseComponentBot {
+export abstract class BaseComponent {
     protected mediator: Mediator;
 
     constructor(mediator: Mediator = null) {
@@ -15,7 +16,6 @@ export abstract class BaseComponentBot {
 }
 
 export interface Mediator {
-    // dataStoreMethods(methodName: string): any;
     getDatastore(): DatastoreInterface;
 }
 
@@ -23,13 +23,14 @@ export class Bot implements Mediator {
     private exchangeapi: AbstractExchange;
     private strategies: Strategy[] = [];
     private datastore: DatastoreInterface;
-    private symbol: string = 'ETH-PERP';
-    private MODE: any;
-    constructor(mode: string,symbol: string ,ExchangeAPI: new () => AbstractExchange, _strategies?: typeof Strategy[] | undefined) {
-        this.setTradeConfig(mode,symbol)
+    private MODE: string;
+    private symbol: string = CONFIG.TRADE.SYMBOL;
+    private timeframe: string = CONFIG.TRADE.TIMEFRAME;
+    constructor(ExchangeAPI: new () => AbstractExchange, _strategies?: typeof Strategy[] | undefined) {
         this.exchangeapi = new ExchangeAPI()
         this.exchangeapi.setMediator(this);
         this.setStrategy(_strategies);
+        console.log('[Info]: Launched...[mode]=', this.MODE);
     }
     public setExchange(ExchangeAPI: new () => AbstractExchange): void {
         this.exchangeapi = new ExchangeAPI()
@@ -40,7 +41,7 @@ export class Bot implements Mediator {
     public setStrategy(_strategies: typeof Strategy[]): void {
         if (_strategies instanceof Array) {
             _strategies.forEach(el => this.strategies.push(new el(this)));
-        }else throw Error('[ERROR]:STRATEGIES_IS_NOT_ARRAY')
+        }
     }
     public getDatastore(): DatastoreInterface { return this.datastore }
     public async main() {
@@ -57,7 +58,7 @@ export class Bot implements Mediator {
         await this.cancel()
     }
     private async setOHLCV() {
-        const ohlcv = await this.exchangeapi.fetchOHLCV(this.symbol, '1h', Date.now() - 3600 * 3000)
+        const ohlcv = await this.exchangeapi.fetchOHLCV(this.symbol, this.timeframe, Date.now() - 3600 * 3000)
         this.datastore.setOHLCV(ohlcv);
         console.log('[Info] OHLCV :>> ', ohlcv);
     }
@@ -116,10 +117,10 @@ export class Bot implements Mediator {
             console.log('e :>> ', e);
         }
     }
-    public setTradeConfig(mode: string, symbol: string) {
-        this.MODE = mode;
-        this.symbol = symbol;
-    }
+    // protected setTradeConfig(mode: string, symbol: string) {
+    //     this.MODE = mode;
+    //     this.symbol = symbol;
+    // }
     // private setActiveOrders() {
     //     // FOR_TEST
     //     const test: Order = {
