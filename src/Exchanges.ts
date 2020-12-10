@@ -115,7 +115,7 @@ export abstract class AbstractExchange extends BaseComponentBot {
     public async fetchOrders(orders: IterableIterator<Order>, counts?: number): Promise<Order[]>
     public async fetchOrders(orders: Order[], counts?: number): Promise<Order[]>
     public async fetchOrders(orders: any, counts = 0): Promise<Order[]> {
-        console.log(`[Info]: calling active orders status under the managment...`);
+        console.log(`[Info]: Fetch order status under the managment via Exchange API...`);
         for (const order of orders) {
             try {
                 const { id, symbol, type, side, amount, price, params } = order;

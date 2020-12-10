@@ -39,6 +39,9 @@ const run = (func, sec) => {
     instance.setStrategy([Strategy])
     instance.setDatastore(Datastore)
     await instance.main()
+    // setTimeout(async () => {
+    //     await instance.main()
+    // }, 5000);
     // const ftx = new FTX()
     // await ftx.createOrders([order])
     // instance

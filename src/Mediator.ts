@@ -15,7 +15,8 @@ export abstract class BaseComponentBot {
 }
 
 export interface Mediator {
-    dataStoreMethods(methodName: string): any
+    // dataStoreMethods(methodName: string): any;
+    getDatastore(): DatastoreInterface;
 }
 
 export class Bot implements Mediator {
@@ -39,21 +40,16 @@ export class Bot implements Mediator {
             _strategies.forEach(el => this.strategies.push(new el(this)));
         }
     }
-    public dataStoreMethods(methodName: string): {
-        ohlcv: () => number[][];
-        activeOrders: () => IterableIterator<Order>;
-        position: () => Position;
-        order: (order: Order[]) => void;
-    } {
-        const methods = {
-            ohlcv: this.datastore.getOHCV,
-            activeOrders: this.datastore.getActiveOrders().values,
-            position: this.datastore.getPosition,
-            order: this.datastore.setPreparedOrders,
-        }
-        return methods[methodName]
-    }
-    public getDatastore() { return this.datastore }
+    // public dataStoreMethods(methodName: string) {
+    //     const methods = {
+    //         ohlcv: this.datastore.getOHCV,
+    //         activeOrders: this.datastore.getActiveOrders().values,
+    //         position: this.datastore.getPosition,
+    //         order: this.datastore.setPreparedOrders,
+    //     }
+    //     return methods[methodName]
+    // }
+    public getDatastore(): DatastoreInterface { return this.datastore }
     public async main() {
         if (
             this.datastore == undefined
@@ -77,7 +73,7 @@ export class Bot implements Mediator {
         const values = this.datastore.getActiveOrders().values()
         await this.exchangeapi.fetchOrders(values)
         this.datastore.updateOrderStatus();
-        console.log('[Info]:Process: Done Updating order status...');
+        console.log('[Info]:Process: Done updating order status...');
         /* db???
         Mapnoのキーとidが違うので，idToOrderNameかdbの検索をすることでid=>keyを手に入れる必要がある
          */
@@ -88,10 +84,7 @@ export class Bot implements Mediator {
     }
     private exeStrategy() {
         console.log(`[Info]: Excute strategies....`);
-        if (!this.datastore.getOHCV()) {
-            console.log('[ERROR]:OHLCV_IS_EMPATY');
-            console.log('[Info]:Skipped executing strategies');
-        } else {
+        if (this.datastore.getOHCV()) {
             for (const strategy of this.strategies) {
                 try {
                     const orders = strategy.strategy()
@@ -101,6 +94,9 @@ export class Bot implements Mediator {
                     console.log('[ERROR]:ERROR_WHILE_EXCUTING_STRATEGY', e);
                 }
             }
+        } else {
+            console.log('[ERROR]:OHLCV_IS_EMPATY');
+            console.log('[Info]:Skipped executing strategies');
         }
         console.log('[Info]: Done Excuting all strategies...');
     }
@@ -119,22 +115,13 @@ export class Bot implements Mediator {
         try {
             console.log('[Info]: Try to cancel order...');
             const expiredOrders = this.datastore.getExpiredOrders()
-            if (expiredOrders.length > 1) {
+            if (expiredOrders.length > 0) {
                 await this.exchangeapi.cancelOrders(expiredOrders)
             } else console.log('[Info]: No expired order...');
-            console.log('[Info]: Done cancel expired orders...');
+            console.log('[Info]: Done canceling expired orders...');
         } catch (e) {
             console.log('e :>> ', e);
         }
-        // for (const order of expiredOrders) {
-        //     try {
-        //         await new Promise((resolve) => setTimeout(resolve, 1000))
-        //         const canceledOrder = await this.exchangeapi.cancelOrder(order)
-        //         canceled.push(canceledOrder)
-        //     } catch (e) {
-        //     }
-        // }
-        // this.dataStore.deleteActiveOrders('key', canceled)
     }
     private setActiveOrders() {
         // FOR_TEST
@@ -147,7 +134,7 @@ export class Bot implements Mediator {
             side: 'buy',
             status: 'open',
             amount: 0.001,
-            price: 466.8516549287449,
+            price: 466.85,
             params: {},
             expiracy: Date.now() - 3600 * 1000
         }

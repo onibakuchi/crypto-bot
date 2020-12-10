@@ -25,7 +25,6 @@ export interface DatastoreInterface {
     getPreparedOrders(): Map<string, Order>;
     getActiveOrders(): Map<string, Order>;
     getExpiredOrders(): Order[];
-
     updateOrderStatus(): void;
     updatePreparedOrders(): void;
     setPreparedOrders(orders: Order[]): void;
@@ -34,6 +33,7 @@ export interface DatastoreInterface {
 }
 
 abstract class AbstractDatastore implements DatastoreInterface {
+    db: any = null;
     ohlcv: number[][];
     contractedOrders: Map<string, Order>;
     preparedOrders: Map<string, Order>;
@@ -45,16 +45,17 @@ abstract class AbstractDatastore implements DatastoreInterface {
     public abstract getPreparedOrders(): Map<string, Order>
     public abstract getActiveOrders(): Map<string, Order>
     public abstract getExpiredOrders(): Order[]
-    // public abstract deleteActiveOrders(): void
     public abstract updateOrderStatus(): void
     public abstract updatePreparedOrders(): void
     public abstract setPreparedOrders(orders: Order[]): void
     public abstract getPosition(): Position
+
     public abstract setPosition(): void
     public abstract hook()
     public abstract init()
 }
 export class Datastore implements AbstractDatastore {
+    db: any = null;;
     ohlcv: number[][];
     contractedOrders: Map<string, Order> = new Map();
     preparedOrders: Map<string, Order> = new Map();
@@ -68,6 +69,7 @@ export class Datastore implements AbstractDatastore {
         breakEvenPrice: undefined,
     }
     public init() { }
+    private setDB(db) { this.db = db; }
     public hook() { }
     public updateOrderStatus(): void {
         console.log('[Info]:Calling function updateOrderStatus...');
@@ -95,7 +97,7 @@ export class Datastore implements AbstractDatastore {
                 }
                 this.preparedOrders.set(key, order)
             } else {
-                console.log('[ERROR]: Uncompatible to Order Interface\n <Order> :>>',order);
+                console.log('[ERROR]: Incompatible to Order Interface\n <Order> :>>', order);
             }
         }
     }
@@ -130,14 +132,15 @@ export class Datastore implements AbstractDatastore {
         const expiredOrders = [];
         for (const value of this.activeOrders.values()) {
             console.log(` ${value}`);
-            if (value['expiracy'] >= Date.now()) {
+            if (value['expiracy'] <= Date.now()) {
                 expiredOrders.push(value);
             }
         }
+        console.log('[Info]: Expired orders :>>', expiredOrders);
         return expiredOrders;
     }
     public getPreparedOrders(): Map<string, Order> { return this.preparedOrders }
-    public setPosition() {
+    public setPosition(): void {
         console.log('[Info]: Updating position....');
         const orders = this.contractedOrders.values();
         for (const order of orders) {
@@ -147,6 +150,7 @@ export class Datastore implements AbstractDatastore {
             this.position.avgOpenPrice = (this.position.avgOpenPrice * prevAmount + order.price * order.amount) / this.position.amount;
             this.position.amountUSD = this.position.amount * this.position.avgOpenPrice;
         }
+        console.log('[Info]: Position...\n', this.getPosition());
         this.contractedOrders.clear();
         console.log('[Info]: Done updating position....');
     }
