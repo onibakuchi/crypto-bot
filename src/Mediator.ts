@@ -24,7 +24,9 @@ export class Bot implements Mediator {
     private strategies: Strategy[] = [];
     private datastore: DatastoreInterface;
     private symbol: string = 'ETH-PERP';
-    constructor(ExchangeAPI: new () => AbstractExchange, _strategies?: typeof Strategy[] | undefined) {
+    private MODE: any;
+    constructor(mode: string,symbol: string ,ExchangeAPI: new () => AbstractExchange, _strategies?: typeof Strategy[] | undefined) {
+        this.setTradeConfig(mode,symbol)
         this.exchangeapi = new ExchangeAPI()
         this.exchangeapi.setMediator(this);
         this.setStrategy(_strategies);
@@ -38,17 +40,8 @@ export class Bot implements Mediator {
     public setStrategy(_strategies: typeof Strategy[]): void {
         if (_strategies instanceof Array) {
             _strategies.forEach(el => this.strategies.push(new el(this)));
-        }
+        }else throw Error('[ERROR]:STRATEGIES_IS_NOT_ARRAY')
     }
-    // public dataStoreMethods(methodName: string) {
-    //     const methods = {
-    //         ohlcv: this.datastore.getOHCV,
-    //         activeOrders: this.datastore.getActiveOrders().values,
-    //         position: this.datastore.getPosition,
-    //         order: this.datastore.setPreparedOrders,
-    //     }
-    //     return methods[methodName]
-    // }
     public getDatastore(): DatastoreInterface { return this.datastore }
     public async main() {
         if (
@@ -123,21 +116,25 @@ export class Bot implements Mediator {
             console.log('e :>> ', e);
         }
     }
-    private setActiveOrders() {
-        // FOR_TEST
-        const test: Order = {
-            orderName: 'expectDeleted',
-            id: '17173028975',
-            symbol: 'ETH-PERP',
-            timestamp: 1607426266792,
-            type: 'limit',
-            side: 'buy',
-            status: 'open',
-            amount: 0.001,
-            price: 466.85,
-            params: {},
-            expiracy: Date.now() - 3600 * 1000
-        }
-        this.datastore.getActiveOrders().set('expectDeleted', test)
+    public setTradeConfig(mode: string, symbol: string) {
+        this.MODE = mode;
+        this.symbol = symbol;
     }
+    // private setActiveOrders() {
+    //     // FOR_TEST
+    //     const test: Order = {
+    //         orderName: 'expectDeleted',
+    //         id: '17173028975',
+    //         symbol: 'ETH-PERP',
+    //         timestamp: 1607426266792,
+    //         type: 'limit',
+    //         side: 'buy',
+    //         status: 'open',
+    //         amount: 0.001,
+    //         price: 466.85,
+    //         params: {},
+    //         expiracy: Date.now() - 3600 * 1000
+    //     }
+    //     this.datastore.getActiveOrders().set('expectDeleted', test)
+    // }
 }

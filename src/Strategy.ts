@@ -1,27 +1,44 @@
 import { BaseComponentBot } from './Mediator';
 import { Order, Position } from './Datastore';
+import CONFIG from './config';
 
 abstract class AbstractStrategy extends BaseComponentBot {
+    protected PYRAMIDING: number;
+    protected MAX_ACTIVE_ORDERS: number;
+    protected MAX_LEVERAGE: number;
+    protected IS_PRODUCTION_MODE: Boolean;
+    protected SYMBOL: string;
+    constructor(mediator = null) {
+        super(mediator);
+        this.init();
+    }
     public strategy(): Order[] {
-        const datastore = this.mediator.getDatastore();
-        const pyraminding = 0;
         const newOrders: Order[] = [];
-
+        const datastore = this.mediator.getDatastore();
         const activeOrdMap = datastore.getActiveOrders()
         const ohlcv = datastore.getOHCV();
         const position = datastore.getPosition();
+        const algorithym = this.IS_PRODUCTION_MODE ? this.algorithym : this.testAlgorithym;
+
         if (position.amountUSD > 0) {
             newOrders.push(...this.hookWhenHavePosi());
             if (activeOrdMap.size >= 3) return newOrders
         }
         // すでに約定していてポジションを持っている時かつPyraminging 数>1のとき
-        newOrders.push(...this.algorithym(ohlcv, position));
+        newOrders.push(...algorithym(ohlcv, position));
         console.log('newOrders :>> ', newOrders);
         return newOrders
     }
-    // protected GenOrder(name, side, ordType, price, expiracy, params) { }
-    protected abstract exit(): Order[]
+    public init(): void {
+        this.IS_PRODUCTION_MODE = CONFIG.TRADE.TRADE_ENV.toLowerCase() == 'production';
+        this.SYMBOL = CONFIG.TRADE.SYMBOL;
+        this.PYRAMIDING = Number(CONFIG.TRADE.PYRAMIDING);
+        this.MAX_ACTIVE_ORDERS = Number(CONFIG.TRADE.MAX_ACTIVE_ORDERS);
+        this.MAX_LEVERAGE = Number(CONFIG.TRADE.MAX_LEVERAGE);
+    }
     protected abstract algorithym(ohlcv: number[][], potision: Position, params?): Order[]
+    protected abstract testAlgorithym(ohlcv: number[][], position: Position): Order[]
+    protected abstract exit(): Order[]
     protected abstract hookWhenHavePosi(): Order[]
 }
 export class Strategy extends AbstractStrategy {
@@ -75,7 +92,7 @@ export class Strategy extends AbstractStrategy {
     protected hookWhenHavePosi(): Order[] { return }
     protected setAmounts() { }
     protected setPrices() { }
-    private testAlogo(): Order[] {
+    protected testAlgorithym(ohlcv: number[][], position: Position): Order[] {
         const order: Order = {
             orderName: 'testOrder1',
             id: '',

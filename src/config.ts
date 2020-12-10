@@ -1,5 +1,5 @@
 let CONFIG;
- export default CONFIG = {
+export default CONFIG = {
     "BITBANK": {
         "APIKEY": process.env.BB_APIKEY,
         "APISECRET": process.env.BB_APISECRET
@@ -7,6 +7,17 @@ let CONFIG;
     "FTX": {
         "APIKEY": process.env.FTX_APIKEY,
         "APISECRET": process.env.FTX_APISECRET
+    },
+    "BITMEX": {
+        "APIKEY": process.env.BITMEX_APIKEY,
+        "APISECRET": process.env.BITMEX_APISECRET
+    },
+    "TRADE": {
+        "TRADE_ENV": process.env.TRADE_ENV,
+        "SYMBOL": process.env.SYMBOL,
+        "MAX_ACTIVE_ORDERS": process.env.MAX_ACTIVE_ORDERS,
+        "MAX_LEVERAGE": process.env.MAX_LEVERAGE,
+        "PYRAMIDING": process.env.PYRAMIDING,
     },
     "LINE": {
         "BEARER_ACCESS_TOKEN": process.env.BEARER_ACCESS_TOKEN,
@@ -29,7 +40,6 @@ let CONFIG;
         "scope": "https://www.googleapis.com/auth/spreadsheets",
         "token_type": "Bearer",
         "expiry_date": 1605062558223
-
     },
     "SPREAD_SHEET": {
         "SHEET_ID": process.env.SHEET_ID

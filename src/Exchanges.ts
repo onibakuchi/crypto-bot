@@ -148,16 +148,22 @@ class FTX extends AbstractExchange {
         super(mediator);
         this.setCCXT();
     }
-    protected updateOrder(target: Order, source: CCXT.Order) {
-        source.status && (target.status = source.status);
-        source.id && (target.id = source.id);
-        source.timestamp && (target.timestamp = source.timestamp);
+}
+
+class BitMEX extends AbstractExchange {
+    protected exchangeId: string = 'bitmex';
+    constructor(mediator = null) {
+        super(mediator);
+        this.setCCXT();
+        this.CCXT.urls['api'] = this.CCXT.urls['test'];
+
     }
 }
 
 const ExchangeRepositories = {
     bitbank: BitBank,
     ftx: FTX,
+    bitmex: BitMEX,
 }
 
 export const ExchangeRepositoryFactory = {

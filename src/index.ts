@@ -2,6 +2,7 @@ import { ExchangeRepositoryFactory } from './Exchanges';
 import { Order, Datastore } from './Datastore';
 import { Bot } from './Mediator';
 import { Strategy } from './Strategy';
+import CONFIG from './config';
 
 const timeout = (sec) => {
     return new Promise((resolve) => {
@@ -35,7 +36,7 @@ const run = (func, sec) => {
     // await ftx.fetchOrders([order])
 
     //
-    const instance = new Bot(FTX)
+    const instance = new Bot(CONFIG.TRADE.TRADE_ENV, CONFIG.TRADE.SYMBOL, FTX)
     instance.setStrategy([Strategy])
     instance.setDatastore(Datastore)
     await instance.main()
