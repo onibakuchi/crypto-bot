@@ -1,8 +1,8 @@
 import { Collection, Db, MongoClient } from 'mongodb';
 import { Order } from './Datastore';
-
+import CONFIG from './config';
 const dbname = 'test';
-const uri = `mongodb+srv://new_user0:${process.env.MONGO_DB_PASSWORD}@cluster0.idfhd.mongodb.net/${dbname}?retryWrites=true&w=majority`;
+const URI = `mongodb+srv://new_user0:${CONFIG.DB.DB_PASSWORD}@cluster0.idfhd.mongodb.net/${CONFIG.DB.DB_NAME}?retryWrites=true&w=majority`;
 const collectionName = 'test_naem';
 const order: Order = {
   orderName: 'testOrder',
@@ -17,7 +17,7 @@ const order: Order = {
   price: 0,
   params: {},
 }
-const client = new MongoClient(uri, {
+const client = new MongoClient(URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -37,11 +37,12 @@ const insertDocuments = async (collection: Collection, data: any[]) => {
   }
 }
 
-const findDocuments = async (collection: Collection) => {
+const findDocuments = async <T extends { id: string }>(collection: Collection): Promise<T[]> => {
   try {
     const result = await collection.find({}).toArray()
     console.log("Found the following records");
-    console.log(result)
+    console.log(result);
+    return result
   } catch (e) {
     console.log('e :>> ', e);
   }
@@ -60,7 +61,7 @@ const deleteAllDocuments = async (collection: Collection) => {
   const result = await collection.deleteMany(query);
   console.log("Deleted " + result.deletedCount + " documents");
 }
-const makeOperations = (option: 'update' | 'delete', orders: Order[]) => {
+const makeOperations = <T extends { id: string }>(option: 'update' | 'delete', orders: T[]) => {
   const op = []
   const deleteOpTemp = { deleteOne: { "filter": { "id": null } } };
   const template = {
@@ -92,7 +93,7 @@ const makeOperations = (option: 'update' | 'delete', orders: Order[]) => {
   return op;
 }
 
-const bulkUpsert = async (collection: Collection, orders: Order[]) => {
+const bulkUpsert = async <T extends { id: string }>(collection: Collection, orders: T[]) => {
   try {
     const result = (await collection.bulkWrite(makeOperations('update', orders))).result
     console.log('result :>> ', result);
@@ -100,13 +101,51 @@ const bulkUpsert = async (collection: Collection, orders: Order[]) => {
     console.log('e :>> ', e);
   }
 }
-const bulkDelete = async (collection: Collection, orders: Order[]) => {
+const bulkDelete = async <T extends { id: string }>(collection: Collection, orders: T[]) => {
   try {
     const result = (await collection.bulkWrite(makeOperations('delete', orders))).result
     console.log('result :>> ', result);
   } catch (e) {
     console.log('e :>> ', e);
   }
+}
+interface DbInterface {
+  bulkDelete: <T extends { id: string }>(collection: Collection, Orders: T[]) => void;
+  bulkUpsert: <T extends { id: string }>(collection: Collection, Orders: T[]) => void;
+}
+class MongoDb implements DbInterface {
+  protected client: MongoClient;
+  protected db: Db;
+  protected collections: {
+    orders: Collection<Order>
+    [other: string]: Collection<any>
+  } = {
+      orders: null
+    }
+  constructor() {
+    this.client = new MongoClient(URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    })
+  }
+  public async init(): Promise<{ id: string; }[]> {
+    await client.connect();
+    this.db = client.db(CONFIG.DB.COLLECTION_NAME);
+    this.collections.orders = this.db.collection(CONFIG.DB.COLLECTION_NAME);
+    return await this.findDocuments(this.collections.orders);
+  }
+  public bulkDelete: <T extends { id: string }>(collection: Collection, Orders: T[]) => void;
+  public bulkUpsert: <T extends { id: string }>(collection: Collection, Orders: T[]) => void;
+  public findDocuments = async <T extends { id: string }>(collection: Collection): Promise<T[]> => {
+    try {
+      const result = await collection.find({}).toArray()
+      console.log("Found the following records");
+      console.log(result);
+      return result
+    } catch (e) {
+      console.log('e :>> ', e);
+    }
+  };
 }
 
 (async () => {
