@@ -40,7 +40,7 @@ abstract class AbstractDatastore implements DatastoreInterface {
     position: Position;
 
     public getOHCV(): number[][] { return this.ohlcv }
-    public setOHLCV(ohlcv) { return this.ohlcv = ohlcv; }
+    public setOHLCV(ohlcv: number[][]) { this.ohlcv = ohlcv; }
     public abstract getPreparedOrders(): Map<string, Order>
     public abstract getActiveOrders(): Map<string, Order>
     public abstract getExpiredOrders(): Order[]
@@ -52,9 +52,10 @@ abstract class AbstractDatastore implements DatastoreInterface {
     public abstract setPosition(): void
     public abstract hook()
     public abstract init()
+    public abstract setDb()
 }
 export class Datastore implements AbstractDatastore {
-    db: any = null;;
+    db: any = null;
     ohlcv: number[][];
     contractedOrders: Map<string, Order> = new Map();
     preparedOrders: Map<string, Order> = new Map();
@@ -64,13 +65,59 @@ export class Datastore implements AbstractDatastore {
         side: '',
         amount: 0,
         amountUSD: 0,
-        avgOpenPrice: undefined,
-        breakEvenPrice: undefined,
+        avgOpenPrice: null,
+        breakEvenPrice: null,
     }
-    public init() {
-
-    }
+    public init() { }
     public hook() { }
+    public setDb() { }
+
+    public getActiveOrders() { return this.activeOrders }
+    public getExpiredOrders(): Order[] {
+        const expiredOrders = [];
+        for (const value of this.activeOrders.values()) {
+            console.log(` ${value}`);
+            if (value['expiration'] <= Date.now()) {
+                expiredOrders.push(value);
+            }
+        }
+        console.log('[Info]: Expired orders :>>', expiredOrders);
+        return expiredOrders;
+    }
+    public getOHCV(): number[][] { return this.ohlcv }
+    public getPosition() { return this.position; }
+    public getPreparedOrders(): Map<string, Order> { return this.preparedOrders }
+    public setOHLCV(ohlcv: number[][]) {
+        this.ohlcv = ohlcv;
+    }
+    public setPosition(): void {
+        console.log('[Info]: Updating position....');
+        const orders = this.contractedOrders.values();
+        for (const order of orders) {
+            if (this.position.symbol != order.symbol) continue;
+            const prevAmount = this.position.amount;
+            this.position.amount += (order.side == this.position.side) ? order.amount : -order.amount;
+            this.position.avgOpenPrice = (this.position.avgOpenPrice * prevAmount + order.price * order.amount) / this.position.amount;
+            this.position.amountUSD = this.position.amount * this.position.avgOpenPrice;
+        }
+        console.log('[Info]: Position...\n', this.getPosition());
+        this.contractedOrders.clear();
+        console.log('[Info]: Done updating position....');
+    }
+    public setPreparedOrders(orders: Order[]): void {
+        for (const order of orders) {
+            if (order) {
+                const key = order['orderName'];
+                if (this.activeOrders.has(key)) {
+                    console.log(`[Info]:skipped... Order<${key}> is already open...`);
+                    continue;
+                }
+                this.preparedOrders.set(key, order)
+            } else {
+                console.log('[ERROR]: Incompatible to Order Interface\n <Order> :>>', order);
+            }
+        }
+    }
     public updateOrderStatus(): void {
         console.log('[Info]:Calling function updateOrderStatus...');
         const iterator: IterableIterator<[string, Order]> = this.activeOrders.entries();
@@ -86,20 +133,6 @@ export class Datastore implements AbstractDatastore {
             }
         }
         this.setPosition();
-    }
-    public setPreparedOrders(orders: Order[]): void {
-        for (const order of orders) {
-            if (order) {
-                const key = order['orderName'];
-                if (this.activeOrders.has(key)) {
-                    console.log(`[Info]:skipped... Order<${key}> is already open...`);
-                    continue;
-                }
-                this.preparedOrders.set(key, order)
-            } else {
-                console.log('[ERROR]: Incompatible to Order Interface\n <Order> :>>', order);
-            }
-        }
     }
     public updatePreparedOrders(): void {
         const orders = this.preparedOrders.values()
@@ -119,45 +152,6 @@ export class Datastore implements AbstractDatastore {
                 this.preparedOrders.delete(key);
             }
         }
-    }
-    // deleteActiveOrders() {
-    //     const orders = this.activeOrders2.values();
-    //     for (const order of orders) {
-    //         if (order.expiracy > Date.now()) { }
-    //         this.activeOrders2.delete(order.orderName);
-    //     }
-    // }
-    public getActiveOrders() { return this.activeOrders }
-    public getExpiredOrders(): Order[] {
-        const expiredOrders = [];
-        for (const value of this.activeOrders.values()) {
-            console.log(` ${value}`);
-            if (value['expiration'] <= Date.now()) {
-                expiredOrders.push(value);
-            }
-        }
-        console.log('[Info]: Expired orders :>>', expiredOrders);
-        return expiredOrders;
-    }
-    public getPreparedOrders(): Map<string, Order> { return this.preparedOrders }
-    public setPosition(): void {
-        console.log('[Info]: Updating position....');
-        const orders = this.contractedOrders.values();
-        for (const order of orders) {
-            if (this.position.symbol != order.symbol) continue;
-            const prevAmount = this.position.amount;
-            this.position.amount += (order.side == this.position.side) ? order.amount : -order.amount;
-            this.position.avgOpenPrice = (this.position.avgOpenPrice * prevAmount + order.price * order.amount) / this.position.amount;
-            this.position.amountUSD = this.position.amount * this.position.avgOpenPrice;
-        }
-        console.log('[Info]: Position...\n', this.getPosition());
-        this.contractedOrders.clear();
-        console.log('[Info]: Done updating position....');
-    }
-    public getPosition() { return this.position; }
-    public getOHCV(): number[][] { return this.ohlcv }
-    public setOHLCV(ohlcv: number[][]) {
-        this.ohlcv = ohlcv;
     }
 }
 

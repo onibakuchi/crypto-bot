@@ -1,6 +1,6 @@
 import { AbstractExchange } from './exchanges';
 import { Strategy } from './strategy';
-import { DatastoreInterface, Order, Position } from './datastore';
+import type { DatastoreInterface } from './datastore';
 import CONFIG from './config';
 
 export abstract class BaseComponent {
@@ -24,7 +24,7 @@ export class Bot implements Mediator {
     private strategies: Strategy[] = [];
     private datastore: DatastoreInterface;
     private MODE: string;
-    private symbol: string = CONFIG.TRADE.SYMBOL;
+    private readonly symbol: string = CONFIG.TRADE.SYMBOL;
     private timeframe: string = CONFIG.TRADE.TIMEFRAME;
     constructor(ExchangeAPI: new () => AbstractExchange, _strategies?: typeof Strategy[] | undefined) {
         this.exchangeapi = new ExchangeAPI()

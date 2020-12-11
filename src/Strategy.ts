@@ -12,6 +12,13 @@ abstract class AbstractStrategy extends BaseComponent {
         super(mediator);
         this.init();
     }
+    private init(): void {
+        this.IS_PRODUCTION_MODE = CONFIG.TRADE.TRADE_ENV.toLowerCase() == 'production';
+        this.SYMBOL = CONFIG.TRADE.SYMBOL;
+        this.PYRAMIDING = Number(CONFIG.TRADE.PYRAMIDING);
+        this.MAX_ACTIVE_ORDERS = Number(CONFIG.TRADE.MAX_ACTIVE_ORDERS);
+        this.MAX_LEVERAGE = Number(CONFIG.TRADE.MAX_LEVERAGE);
+    }
     public strategy(): Order[] {
         const newOrders: Order[] = [];
         const datastore = this.mediator.getDatastore();
@@ -30,19 +37,14 @@ abstract class AbstractStrategy extends BaseComponent {
         console.log('newOrders :>> ', newOrders);
         return newOrders
     }
-    public init(): void {
-        this.IS_PRODUCTION_MODE = CONFIG.TRADE.TRADE_ENV.toLowerCase() == 'production';
-        this.SYMBOL = CONFIG.TRADE.SYMBOL;
-        this.PYRAMIDING = Number(CONFIG.TRADE.PYRAMIDING);
-        this.MAX_ACTIVE_ORDERS = Number(CONFIG.TRADE.MAX_ACTIVE_ORDERS);
-        this.MAX_LEVERAGE = Number(CONFIG.TRADE.MAX_LEVERAGE);
-    }
     protected abstract algorithym(ohlcv: number[][], potision: Position, params?): Order[]
     protected abstract testAlgorithym(ohlcv: number[][], position: Position): Order[]
     protected abstract hookWhenHavePosi(): Order[]
     protected abstract exit(): Order[]
 }
 export class Strategy extends AbstractStrategy {
+    protected setAmounts() { }
+    protected setPrices() { }
     protected algorithym(ohlcv: number[][], position: Position): Order[] {
         //  Non Reduce Only
         const orders = [];
@@ -68,11 +70,6 @@ export class Strategy extends AbstractStrategy {
         orders.push(ord1, ord15, ord2, ord3)
         return orders;
     }
-    protected exit() {
-        //Reduce Only
-        const orders = [];
-        return orders
-    }
     private order(name, side, amount, price, duration = 10 * 60, params = {}) {
         const template: Order = {
             orderName: name,
@@ -90,9 +87,8 @@ export class Strategy extends AbstractStrategy {
         const ord = Object.assign({}, template);
         return ord;
     }
+    protected exit(): Order[] { return }
     protected hookWhenHavePosi(): Order[] { return }
-    protected setAmounts() { }
-    protected setPrices() { }
     protected testAlgorithym(ohlcv: number[][], position: Position): Order[] {
         const order: Order = this.order('testOrder1', 'buy', 0.001, Math.random() * 30 + 430)
         return [order]
