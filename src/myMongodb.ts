@@ -37,17 +37,18 @@ const makeOperations = <T extends { id: string }>(option: 'update' | 'delete', o
 }
 
 export interface DbInterface {
-  init(): Promise<CollectionRepository>
-  close(): void
+  addCollection(name: string): void
   bulkDelete<T extends { id: string }>(collection: Collection, Orders: T[]): void;
   bulkUpsert<T extends { id: string }>(collection: Collection, Orders: T[]): void;
+  close(): void
+  connect(): Promise<CollectionRepository>
   findDocuments<T extends { id: string }>(collection: Collection, query?: FilterQuery<any>): Promise<T[]>
 }
 export type CollectionRepository = {
   orders: Collection<{ id: string }>
   [other: string]: Collection<any>
 }
-export class MongoDb implements DbInterface {
+export class MyMongoDb implements DbInterface {
   protected client: MongoClient;
   protected db: Db;
   protected collections: CollectionRepository = {
@@ -59,18 +60,9 @@ export class MongoDb implements DbInterface {
       useUnifiedTopology: true
     })
   }
-  public async init(): Promise<CollectionRepository> {
-    try {
-      await this.client.connect();
-      this.db = this.client.db(CONFIG.DB.COLLECTION_NAME);
-      this.collections.orders = this.db.collection(CONFIG.DB.COLLECTION_NAME);
-      return this.collections;
-    } catch (e) {
-      console.log('e :>> ', e);
-      this.client.close();
-    }
+  public addCollection<T>(collectionName: string) {
+    this.collections[collectionName] = this.db.collection<T>(collectionName);
   }
-  public close(): void { this.client.close() }
   public async bulkDelete<T extends { id: string }>(collection: Collection, orders: T[]) {
     try {
       const result = (await collection.bulkWrite(makeOperations('delete', orders))).result
@@ -88,6 +80,18 @@ export class MongoDb implements DbInterface {
     }
 
   }
+  public close(): void { this.client.close() }
+  public async connect(): Promise<CollectionRepository> {
+    try {
+      await this.client.connect();
+      this.db = this.client.db(CONFIG.DB.DB_NAME);
+      this.collections.orders = this.db.collection(CONFIG.DB.COLLECTION_NAME);
+      return this.collections;
+    } catch (e) {
+      console.log('e :>> ', e);
+      this.client.close();
+    }
+  }
   public async findDocuments<T extends { id: string }>(collection: Collection, query: FilterQuery<any> = {}): Promise<T[]> {
     try {
       const result = await collection.find(query).toArray()
@@ -99,9 +103,9 @@ export class MongoDb implements DbInterface {
     }
   }
   public async test() {
-    await this.init();
+    await this.connect();
     // await this.findDocuments(this.collections.orders, {});
-    await this.bulkUpsert(this.collections.orders, [{ id: '33', hoge: "op" }, { id: '222', hoge: "open" }])
+    await this.bulkUpsert(this.collections.orders, [{ id: '3111', hoge: "op" }, { id: '222', hoge: "canceled" }])
     await this.findDocuments(this.collections.orders, {});
   }
 }
@@ -110,7 +114,7 @@ export class MongoDb implements DbInterface {
 //   let instance: MongoDb;
 //   try {
 //     instance = new MongoDb();
-//     // await instance.init();
+//     // await instance.connect();
 //     await instance.test();
 //   } finally {
 //     instance.close()

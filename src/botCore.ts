@@ -32,30 +32,23 @@ export class Bot implements Mediator {
         this.setStrategy(_strategies);
         console.log('[Info]: Launched...[mode]=', this.MODE);
     }
-    public setExchange(ExchangeAPI: new () => AbstractExchange): void {
-        this.exchangeapi = new ExchangeAPI()
-    }
-    public setDatastore(Datastore: new () => DatastoreInterface): void {
-        this.datastore = new Datastore()
-    }
-    public setStrategy(_strategies: typeof Strategy[]): void {
-        if (_strategies instanceof Array) {
-            _strategies.forEach(el => this.strategies.push(new el(this)));
+    private exeStrategy() {
+        console.log(`[Info]: Excute strategies....`);
+        if (this.datastore.getOHCV()) {
+            for (const strategy of this.strategies) {
+                try {
+                    const orders = strategy.strategy()
+                    this.datastore.setPreparedOrders(orders)
+                    console.log('[Info]: Done excuting a strategy...');
+                } catch (e) {
+                    console.log('[ERROR]:ERROR_WHILE_EXCUTING_STRATEGY', e);
+                }
+            }
+        } else {
+            console.log('[ERROR]:OHLCV_IS_EMPATY');
+            console.log('[Info]:Skipped executing strategies');
         }
-    }
-    public getDatastore(): DatastoreInterface { return this.datastore }
-    public async main() {
-        if (
-            this.datastore == undefined
-            || this.exchangeapi == undefined
-            || this.strategies.length == 0
-        ) throw Error('[ERROR]: UNDEFINED_EXCHANGE_API_OR_DARASTORE');
-        // this.setActiveOrders();//FOR TEST
-        await this.setOHLCV();
-        await this.updateStatus();
-        this.exeStrategy()
-        await this.order()
-        await this.cancel()
+        console.log('[Info]: Done Excuting all strategies...');
     }
     private async setOHLCV() {
         const ohlcv = await this.exchangeapi.fetchOHLCV(this.symbol, this.timeframe, Date.now() - 3600 * 3000)
@@ -76,35 +69,6 @@ export class Bot implements Mediator {
         // const orders = this.exchangeapi.fetchOrders(ids)
         // this.dataStore.updateOrderStatus(orders);
     }
-    private exeStrategy() {
-        console.log(`[Info]: Excute strategies....`);
-        if (this.datastore.getOHCV()) {
-            for (const strategy of this.strategies) {
-                try {
-                    const orders = strategy.strategy()
-                    this.datastore.setPreparedOrders(orders)
-                    console.log('[Info]: Done excuting a strategy...');
-                } catch (e) {
-                    console.log('[ERROR]:ERROR_WHILE_EXCUTING_STRATEGY', e);
-                }
-            }
-        } else {
-            console.log('[ERROR]:OHLCV_IS_EMPATY');
-            console.log('[Info]:Skipped executing strategies');
-        }
-        console.log('[Info]: Done Excuting all strategies...');
-    }
-    public async order() {
-        try {
-            console.log('[Info]: Try to order...');
-            const values = this.datastore.getPreparedOrders().values();
-            await this.exchangeapi.createOrders(values);
-            this.datastore.updatePreparedOrders();
-            console.log('[Info]: Done order...');
-        } catch (e) {
-            console.log('e :>> ', e);
-        }
-    }
     public async cancel() {
         try {
             console.log('[Info]: Try to cancel order...');
@@ -117,6 +81,44 @@ export class Bot implements Mediator {
             console.log('e :>> ', e);
         }
     }
+    public getDatastore(): DatastoreInterface { return this.datastore }
+    public async main() {
+        if (
+            this.datastore == undefined
+            || this.exchangeapi == undefined
+            || this.strategies.length == 0
+        ) throw Error('[ERROR]: UNDEFINED_EXCHANGE_API_OR_DARASTORE');
+        // this.setActiveOrders();//FOR TEST
+        await this.setOHLCV();
+        await this.updateStatus();
+        this.exeStrategy()
+        await this.order()
+        await this.cancel()
+    }
+    public async order() {
+        try {
+            console.log('[Info]: Try to order...');
+            const values = this.datastore.getPreparedOrders().values();
+            await this.exchangeapi.createOrders(values);
+            this.datastore.updatePreparedOrders();
+            console.log('[Info]: Done order...');
+        } catch (e) {
+            console.log('e :>> ', e);
+        }
+    }
+    public setExchange(ExchangeAPI: new () => AbstractExchange): void {
+        this.exchangeapi = new ExchangeAPI()
+    }
+    public setDatastore(Datastore: new () => DatastoreInterface): void {
+        this.datastore = new Datastore();
+    }
+    public setStrategy(_strategies: typeof Strategy[]): void {
+        if (_strategies instanceof Array) {
+            _strategies.forEach(el => this.strategies.push(new el(this)));
+        }
+    }
+
+    
     // protected setTradeConfig(mode: string, symbol: string) {
     //     this.MODE = mode;
     //     this.symbol = symbol;
