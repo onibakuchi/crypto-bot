@@ -21,7 +21,7 @@ export default CONFIG = {
         "TIMEFRAME": process.env.TIMEFRAME,
     },
     "DB": {
-        "URI": process.env.URL,
+        "URI": process.env.URI,
         "DB_NAME": process.env.DB_NAME,
         "COLLECTION_NAME":process.env.COLLECTION_NAME,
         "DB_PASSWORD": process.env.MONGO_DB_PASSWORD,

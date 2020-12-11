@@ -1,5 +1,5 @@
-import { BaseComponent } from './Mediator';
-import { Order, Position } from './Datastore';
+import { BaseComponent } from './botCore';
+import type { Order, Position } from './datastore';
 import CONFIG from './config';
 
 abstract class AbstractStrategy extends BaseComponent {

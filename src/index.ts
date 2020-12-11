@@ -1,7 +1,7 @@
-import { ExchangeRepositoryFactory } from './Exchanges';
-import { Order, Datastore } from './Datastore';
-import { Bot } from './Mediator';
-import { Strategy } from './Strategy';
+import { ExchangeRepositoryFactory } from './exchanges';
+import { Order, Datastore } from './datastore';
+import { Bot } from './botCore';
+import { Strategy } from './strategy';
 import CONFIG from './config';
 
 const timeout = (sec) => {

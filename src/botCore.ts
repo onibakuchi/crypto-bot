@@ -1,6 +1,6 @@
-import { AbstractExchange } from './Exchanges';
-import { Strategy } from './Strategy';
-import { DatastoreInterface, Order, Position } from './Datastore';
+import { AbstractExchange } from './exchanges';
+import { Strategy } from './strategy';
+import { DatastoreInterface, Order, Position } from './datastore';
 import CONFIG from './config';
 
 export abstract class BaseComponent {

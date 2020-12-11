@@ -1,4 +1,3 @@
-// type Status = 'ActiveOrder' | 'Position' | 'Await' | 'Error'
 export interface Order {
     orderName: string;
     id: string;

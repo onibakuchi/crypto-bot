@@ -1,5 +1,5 @@
-import { Bot } from './Mediator';
-import { AbstractExchange, ExchangeRepositoryFactory } from './Exchanges';
+import { Bot } from './botCore';
+import { AbstractExchange, ExchangeRepositoryFactory } from './exchanges';
 
 const event = {
     event: '',
