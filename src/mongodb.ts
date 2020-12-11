@@ -4,7 +4,7 @@ import { Order } from './Datastore';
 const dbname = 'test';
 const uri = `mongodb+srv://new_user0:${process.env.MONGO_DB_PASSWORD}@cluster0.idfhd.mongodb.net/${dbname}?retryWrites=true&w=majority`;
 const collectionName = 'test_naem';
-const orders: Order = {
+const order: Order = {
   orderName: 'testOrder',
   id: '12121',
   expiration: 0,
@@ -47,21 +47,22 @@ const findDocuments = async (collection: Collection) => {
   }
 };
 
-const updsertDocuments = async (collection: Collection) => {
-  try {
-    const result = await collection.updateOne({ b: 1 }, { $set: { b: 10101 } }, { upsert: true });
-    console.log('result  :>> ', result);
-  } catch (e) {
-    console.log('e :>> ', e);
-  }
-}
+// const updsertDocuments = async (collection: Collection) => {
+//   try {
+//     const result = await collection.updateOne({ b: 1 }, { $set: { b: 10101 } }, { upsert: true });
+//     console.log('result  :>> ', result);
+//   } catch (e) {
+//     console.log('e :>> ', e);
+//   }
+// }
 const deleteAllDocuments = async (collection: Collection) => {
   const query = { a: 2 };
   const result = await collection.deleteMany(query);
   console.log("Deleted " + result.deletedCount + " documents");
 }
-const MakeOperation = (option, orders: Order[]) => {
+const makeOperations = (option: 'update' | 'delete', orders: Order[]) => {
   const op = []
+  const deleteOpTemp = { deleteOne: { "filter": { "id": null } } };
   const template = {
     updateOne:
     {
@@ -79,40 +80,33 @@ const MakeOperation = (option, orders: Order[]) => {
       }
       break;
     case 'delete':
-      const deleteOpTemp = { deleteOne: { "filter": { "id": null } } };
       for (const order of orders) {
-        template.updateOne.filter.id = order.id;
-        op.push({ ...template })
+        deleteOpTemp.deleteOne.filter.id = order.id;
+        op.push({ ...deleteOpTemp })
+        console.log('op :>> ', op);
       }
       break;
+    default:
+      console.log('[ERROR]:NO_OPTION');
   }
   return op;
 }
 
-const bulkUpdate = async (collection: Collection, orders: Order[]) => {
-  const operations = [];
-  for (const order of orders) {
-    const template = {
-      updateOne:
-      {
-        "filter": { "order": order.id },
-        "update": { $set: order },
-        "upsert": true
-      }
-    }
-    operations.push(template)
+const bulkUpsert = async (collection: Collection, orders: Order[]) => {
+  try {
+    const result = (await collection.bulkWrite(makeOperations('update', orders))).result
+    console.log('result :>> ', result);
+  } catch (e) {
+    console.log('e :>> ', e);
   }
-  const result = await collection.bulkWrite([
-    {
-      updateOne:
-      {
-        "filter": { "order": "" },
-        "update": { $set: { "status": "open" } },
-        "upsert": true
-      }
-    },
-  ])
-  console.log('result :>> ', result);
+}
+const bulkDelete = async (collection: Collection, orders: Order[]) => {
+  try {
+    const result = (await collection.bulkWrite(makeOperations('delete', orders))).result
+    console.log('result :>> ', result);
+  } catch (e) {
+    console.log('e :>> ', e);
+  }
 }
 
 (async () => {
@@ -124,9 +118,11 @@ const bulkUpdate = async (collection: Collection, orders: Order[]) => {
     // const result = await collections.orders.createIndex({ fullplot: "text" }, { default_language: "english" });
     // console.log(`Index created: ${result}`);
 
-    await deleteAllDocuments(collections.orders)
-    // await insertDocuments(collections.orders, [{ b: 1 }, { b: 21 }])
+    // await deleteAllDocuments(collections.orders)
+    // await insertDocuments(collections.orders, [order])
     // await updsertDocuments(collections.orders)
+    // await bulkUpsert(collections.orders, [order]);
+    await bulkDelete(collections.orders, [order])
     await findDocuments(collections.orders)
   } finally {
     client.close()
