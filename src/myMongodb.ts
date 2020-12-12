@@ -36,19 +36,23 @@ const makeOperations = <T extends { id: string }>(option: 'update' | 'delete', o
   return op;
 }
 
-export interface DbInterface {
-  addCollection(name: string): void
-  bulkDelete<T extends { id: string }>(collection: Collection, Orders: T[]): void;
-  bulkUpsert<T extends { id: string }>(collection: Collection, Orders: T[]): void;
+export interface DbDatastore {
   close(): void
-  connect(): Promise<CollectionRepository>
+  connect(): Promise<void>
+}
+export interface MongoDatastore extends DbDatastore {
+  addCollection(name: string): void
+  bulkDelete<T extends { id: string }>(collection: Collection, Orders: T[]): Promise<void>;
+  bulkUpsert<T extends { id: string }>(collection: Collection, Orders: T[]): Promise<void>;
+  close(): void
+  connect(): Promise<void>
   findDocuments<T extends { id: string }>(collection: Collection, query?: FilterQuery<any>): Promise<T[]>
 }
 export type CollectionRepository = {
   orders: Collection<{ id: string }>
   [other: string]: Collection<any>
 }
-export class MyMongoDb implements DbInterface {
+export class MyMongoDb implements MongoDatastore {
   protected client: MongoClient;
   protected db: Db;
   protected collections: CollectionRepository = {
@@ -58,12 +62,13 @@ export class MyMongoDb implements DbInterface {
     this.client = new MongoClient(URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true
-    })
+    });
   }
   public addCollection<T>(collectionName: string) {
     this.collections[collectionName] = this.db.collection<T>(collectionName);
   }
   public async bulkDelete<T extends { id: string }>(collection: Collection, orders: T[]) {
+    if (orders.length == 0) return
     try {
       const result = (await collection.bulkWrite(makeOperations('delete', orders))).result
       console.log('result :>> ', result);
@@ -72,6 +77,7 @@ export class MyMongoDb implements DbInterface {
     }
   }
   public async bulkUpsert<T extends { id: string }>(collection: Collection, orders: T[]) {
+    if (orders.length == 0) return
     try {
       const result = (await collection.bulkWrite(makeOperations('update', orders))).result
       console.log('result :>> ', result);
@@ -81,12 +87,11 @@ export class MyMongoDb implements DbInterface {
 
   }
   public close(): void { this.client.close() }
-  public async connect(): Promise<CollectionRepository> {
+  public async connect(): Promise<void> {
     try {
       await this.client.connect();
       this.db = this.client.db(CONFIG.DB.DB_NAME);
       this.collections.orders = this.db.collection(CONFIG.DB.COLLECTION_NAME);
-      return this.collections;
     } catch (e) {
       console.log('e :>> ', e);
       this.client.close();

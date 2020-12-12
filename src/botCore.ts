@@ -95,6 +95,7 @@ export class Bot implements Mediator {
         await this.order()
         await this.cancel()
     }
+    public async init() { await this.datastore.init() }
     public async order() {
         try {
             console.log('[Info]: Try to order...');
@@ -118,7 +119,7 @@ export class Bot implements Mediator {
         }
     }
 
-    
+
     // protected setTradeConfig(mode: string, symbol: string) {
     //     this.MODE = mode;
     //     this.symbol = symbol;
