@@ -1,5 +1,6 @@
 import { ExchangeRepositoryFactory } from './exchanges';
-import { Order, Datastore } from './datastore';
+import { Order } from './datastore/datastore';
+import { DatastoreWithMongo } from './datastore/datastoreMongo';
 import { Bot } from './botCore';
 import { Strategy } from './strategy';
 import CONFIG from './config';
@@ -38,7 +39,7 @@ const run = (func, sec) => {
     //
     const instance = new Bot(FTX)
     instance.setStrategy([Strategy])
-    instance.setDatastore(Datastore)
+    instance.setDatastore(DatastoreWithMongo)
     await instance.main()
     // setTimeout(async () => {
     //     await instance.main()

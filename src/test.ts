@@ -1,19 +1,18 @@
-const orders = new Map();
 
-const ord ={
-    name:'hoge',
-    size:2
-}
-console.log(ord);
-orders.set('hoge', ord)
 
-const ord2 = orders.get('hoge');
-console.log('--');
-console.log(ord2);
+(async () => {
+    const test = (c = 0) => {
+        const hoge = Error('hoge')
+        if (hoge instanceof Error) {
+            if (c > 2) return 'hogemaru'
+            return test(c + 1)
+        }
+    }
+    const promise2 = test();
+    const promise1 = await Promise.resolve('resolve');
 
-ord2['size'] = 26;
-console.log(ord2);
-console.log('--');
+    (await Promise.all([promise1, promise2])).map((v) => {
+        console.log('v :>> ', v);
+    })
 
-const ord3 = orders.get('hoge');
-console.log(ord3);
+})()

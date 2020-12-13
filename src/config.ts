@@ -13,7 +13,7 @@ export default CONFIG = {
         "APISECRET": process.env.BITMEX_APISECRET
     },
     "TRADE": {
-        "TRADE_ENV": process.env.TRADE_ENV,
+        "MODE": process.env.MODE,
         "SYMBOL": process.env.SYMBOL,
         "MAX_ACTIVE_ORDERS": process.env.MAX_ACTIVE_ORDERS,
         "MAX_LEVERAGE": process.env.MAX_LEVERAGE,

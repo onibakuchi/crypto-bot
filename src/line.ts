@@ -1,12 +1,7 @@
 import axiosBase from 'axios';
 import CONFIG from './config';
 
-export interface Message {
-    type: 'text';
-    text: string;
-}
-
-export const pushMessage = async (message: Message[], to = undefined) => {
+export const pushMessage = async (message: string, to = undefined) => {
     try {
         console.log('[Info]:Fired Line Notification');
         await axiosBase({
@@ -17,7 +12,10 @@ export const pushMessage = async (message: Message[], to = undefined) => {
             },
             data: {
                 to: to || CONFIG.LINE.USER_ID,
-                messages: message
+                messages: {
+                    type: 'text',
+                    text: message,
+                }
             }
         })
     } catch (e) {

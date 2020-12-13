@@ -1,5 +1,5 @@
 import CCXT from 'ccxt';
-import { Order } from './datastore';
+import { Order } from './datastore/datastore';
 import { BaseComponent, Mediator } from './botCore';
 import config from './config';
 

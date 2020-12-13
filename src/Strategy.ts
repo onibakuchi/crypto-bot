@@ -1,19 +1,19 @@
 import { BaseComponent } from './botCore';
-import type { Order, Position } from './datastore';
+import type { Order, Position } from './datastore/datastore';
 import CONFIG from './config';
 
 abstract class AbstractStrategy extends BaseComponent {
     protected PYRAMIDING: number;
     protected MAX_ACTIVE_ORDERS: number;
     protected MAX_LEVERAGE: number;
-    protected IS_PRODUCTION_MODE: Boolean;
+    protected MODE: Boolean;
     protected SYMBOL: string;
     constructor(mediator = null) {
         super(mediator);
         this.init();
     }
     private init(): void {
-        this.IS_PRODUCTION_MODE = CONFIG.TRADE.TRADE_ENV.toLowerCase() == 'production';
+        this.MODE = CONFIG.TRADE.MODE.toLowerCase() == 'production';
         this.SYMBOL = CONFIG.TRADE.SYMBOL;
         this.PYRAMIDING = Number(CONFIG.TRADE.PYRAMIDING);
         this.MAX_ACTIVE_ORDERS = Number(CONFIG.TRADE.MAX_ACTIVE_ORDERS);
@@ -31,7 +31,7 @@ abstract class AbstractStrategy extends BaseComponent {
             if (activeOrdMap.size >= 3) return newOrders
         }
         // すでに約定していてポジションを持っている時かつPyraminging 数>1のとき
-        const result = this.IS_PRODUCTION_MODE ? this.algorithym(ohlcv, position) : this.testAlgorithym(ohlcv, position);
+        const result = this.MODE ? this.algorithym(ohlcv, position) : this.testAlgorithym(ohlcv, position);
         newOrders.push(...result);
 
         console.log('newOrders :>> ', newOrders);
