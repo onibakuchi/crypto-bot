@@ -1,28 +1,9 @@
-import { AbstractExchange } from './exchanges';
-import { Strategy } from './strategy';
-import type { DatastoreInterface, Order } from './datastore/datastore';
-import CONFIG from './config';
-import { pushMessage } from './line';
-
-export abstract class BaseComponent {
-    protected mediator: Mediator;
-
-    constructor(mediator: Mediator = null) {
-        this.mediator = mediator;
-    }
-
-    public setMediator(mediator: Mediator): void {
-        this.mediator = mediator;
-    }
-}
-
-export interface Mediator {
-    getDatastore(): DatastoreInterface;
-    getOrders(kind: 'prepared' | 'active' | 'contracted'): IterableIterator<Order>;
-    init(): Promise<void>;
-    main(): Promise<void>;
-    setDatastore(Datastore: new () => DatastoreInterface): void;
-}
+import { AbstractExchange } from '../exchanges/exchanges';
+import { Mediator } from './botInterface';
+import { Strategy } from '../strategy/strategy';
+import type { DatastoreInterface, Order } from '../datastore/datastoreInterface';
+import CONFIG from '../config';
+import { pushMessage } from '../line';
 
 export class Bot implements Mediator {
     private exchangeapi: AbstractExchange;

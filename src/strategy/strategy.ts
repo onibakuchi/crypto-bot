@@ -1,6 +1,6 @@
-import { BaseComponent } from './botCore';
-import type { Order, Position } from './datastore/datastore';
-import CONFIG from './config';
+import { BaseComponent } from '../bot/botInterface';
+import type { Order, Position } from '../datastore/datastoreInterface';
+import CONFIG from '../config';
 
 abstract class AbstractStrategy extends BaseComponent {
     protected PYRAMIDING: number;

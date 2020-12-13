@@ -1,14 +1,15 @@
 import { Collection } from 'mongodb';
-import { MyMongoDb, CollectionRepository, MongoDatastore } from './myMongodb';
-import { BaseDatastore, Order } from './datastore';
+import { MongoDatastore, CollectionRepository, MongoDatastoreInterface } from './baseMongoDb';
+import { Order } from './datastoreInterface';
+import { BaseDatastore } from './datastore';
 import { pushMessage } from '../line';
 
 export class DatastoreWithMongo extends BaseDatastore {
-    db: MongoDatastore;
+    db: MongoDatastoreInterface;
     collections: CollectionRepository;
     constructor() {
         super();
-        this.db = new MyMongoDb();
+        this.db = new MongoDatastore();
     }
     public async init(): Promise<void> {
         await this.db.connect();

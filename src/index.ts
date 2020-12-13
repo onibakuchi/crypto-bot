@@ -1,9 +1,8 @@
-import { ExchangeRepositoryFactory } from './exchanges';
-import { Order } from './datastore/datastore';
+import { ExchangeRepositoryFactory } from './exchanges/exchanges';
+import type { Order } from './datastore/datastoreInterface';
 import { DatastoreWithMongo } from './datastore/datastoreMongo';
-import { Bot } from './botCore';
-import { Strategy } from './strategy';
-import CONFIG from './config';
+import { Bot } from './bot/botCore';
+import { Strategy } from './strategy/strategy';
 
 const timeout = (sec) => {
     return new Promise((resolve) => {

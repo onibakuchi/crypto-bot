@@ -1,5 +1,5 @@
 import { Collection, Db, FilterQuery, MongoClient } from 'mongodb';
-import { DbDatastore, MinimalOrder } from './datastore';
+import { DbDatastore, MinimalOrder } from './datastoreInterface';
 import CONFIG from '../config';
 
 const URI = `mongodb+srv://new_user0:${CONFIG.DB.DB_PASSWORD}@cluster0.idfhd.mongodb.net/${CONFIG.DB.DB_NAME}?retryWrites=true&w=majority`;
@@ -23,7 +23,7 @@ const makeOperations = (option: 'update' | 'delete', orders: MinimalOrder[]) => 
   return op;
 }
 
-export interface MongoDatastore extends DbDatastore {
+export interface MongoDatastoreInterface extends DbDatastore {
   addCollection(name: string): void
   bulkDelete(collection: Collection, Orders: MinimalOrder[]): Promise<void>;
   bulkUpsert(collection: Collection, Orders: MinimalOrder[]): Promise<void>;
@@ -35,7 +35,7 @@ export type CollectionRepository = {
   orders: Collection<MinimalOrder>
   [other: string]: Collection<any>
 }
-export class MyMongoDb implements MongoDatastore {
+export class MongoDatastore implements MongoDatastoreInterface {
   protected client: MongoClient;
   protected db: Db;
   protected collections: CollectionRepository = {
