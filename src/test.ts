@@ -11,8 +11,9 @@
     const promise2 = test();
     const promise1 = await Promise.resolve('resolve');
 
-    (await Promise.all([promise1, promise2])).map((v) => {
-        console.log('v :>> ', v);
-    })
+    const prom = await Promise.resolve('hoge')
+    const prom1 = await new Promise(resolve => setTimeout(() => {
+        resolve(1)
+    }, 100))
 
 })()

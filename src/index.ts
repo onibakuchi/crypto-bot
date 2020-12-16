@@ -36,10 +36,12 @@ const run = (func, sec) => {
     // await ftx.fetchOrders([order])
 
     //
-    const instance = new Bot(FTX)
-    instance.setStrategy([Strategy])
-    instance.setDatastore(DatastoreWithMongo)
-    await instance.main()
+    const bot = new Bot(FTX)
+    bot.setStrategy([Strategy])
+    bot.setDatastore(DatastoreWithMongo)
+    await bot.init();
+    await bot.main();
+    bot.saveToDb();
     // setTimeout(async () => {
     //     await instance.main()
     // }, 5000);

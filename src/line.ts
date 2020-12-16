@@ -20,6 +20,6 @@ export const pushMessage = async (message: string, to = undefined) => {
         })
     } catch (e) {
         console.log('[ERROR]:LINE_PUSH_MESSAGE_FAILED');
-        console.log('e :>> ', e);
+        console.log('[ERROR]:ERROR_LINE_PUSH_MESSAGE :>> ', e);
     }
 }

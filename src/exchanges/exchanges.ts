@@ -1,5 +1,5 @@
 import CCXT from 'ccxt';
-import  type { Order } from '../datastore/datastoreInterface';
+import type { Order } from '../datastore/datastoreInterface';
 import { BaseComponent, Mediator } from '../bot/botInterface';
 import config from '../config';
 
@@ -7,26 +7,28 @@ export abstract class AbstractExchange extends BaseComponent {
     protected CCXT: CCXT.Exchange;
     protected abstract exchangeId: string;
     private maxRetry: number = 1;
+    protected readonly ONLY_PUBLIC: Boolean = false;
     constructor(mediator: Mediator = null) {
         super(mediator);
     }
     protected setCCXT = (): void => {
         const keys = this.setKey(this.exchangeId);
         this.CCXT = new CCXT[this.exchangeId.toLowerCase()]({
-            'apiKey': keys.APIKEY,
-            'secret': keys.APISECRET,
+            'apiKey': keys?.APIKEY,
+            'secret': keys?.APISECRET,
             'enableRateLimit': true,
             // 'verbose': true,
             'options': { 'adjustForTimeDifference': true }
         })
     }
     private setKey(exchangeId: string) {
+        if (this.ONLY_PUBLIC) return
         if (config[exchangeId.toUpperCase()]["APIKEY"] && config[exchangeId.toUpperCase()]["APISECRET"]) {
             return {
                 'APIKEY': config[exchangeId.toUpperCase()]["APIKEY"],
                 'APISECRET': config[exchangeId.toUpperCase()]["APISECRET"]
             }
-        } else throw Error('[ERROR]:CANNOT_FIND_APIKEYS')
+        } else throw Error(`[ERROR]:CANNOT_FIND_${this.exchangeId.toUpperCase()}_APIKEYS`)
     }
     protected updateOrder(target: Order, source: CCXT.Order) {
         target.status = source.status ? source.status : 'pending';
@@ -67,6 +69,7 @@ export abstract class AbstractExchange extends BaseComponent {
                     console.log('[ERROR]: INVALID_ORDER_PROPERTY <Order>:>>', order);
                     continue;
                 }
+                await this.pushMessage(e);
                 if (counts >= this.maxRetry) {
                     console.log('[ERROR]:Retry Failed');
                 } else {
@@ -132,10 +135,25 @@ export abstract class AbstractExchange extends BaseComponent {
         }
         return orders
     }
+    public async fetchTickers(symbols: string[], params?: CCXT.Params): Promise<{ [symbol: string]: CCXT.Ticker }> {
+        if (this.CCXT.has['fetchTickers'] == false) {
+            const tickers = {};
+            for (const symbol of symbols) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                const res = await this.CCXT.fetchTicker(symbol);
+                tickers[symbol] = res;
+            }
+            return tickers;
+        }
+        else {
+            return await this.CCXT.fetchTickers(symbols, params);
+        }
+    }
 }
 
 class BitBank extends AbstractExchange {
     protected exchangeId = 'bitbank';
+    protected readonly ONLY_PUBLIC = true;
     constructor(mediator = null) {
         super(mediator);
         this.setCCXT();
@@ -159,11 +177,22 @@ class BitMEX extends AbstractExchange {
 
     }
 }
+class CoinCheck extends AbstractExchange {
+    protected readonly ONLY_PUBLIC = true;
+    protected exchangeId: string = 'coincheck';
+    constructor(mediator = null) {
+        super(mediator);
+        this.setCCXT();
+    }
+}
 
-const ExchangeRepositories = {
-    bitbank: BitBank,
-    ftx: FTX,
-    bitmex: BitMEX,
+const ExchangeRepositories: {
+    [exchange: string]: new () => AbstractExchange
+} = {
+    'bitbank': BitBank,
+    'coincheck': CoinCheck,
+    'ftx': FTX,
+    'bitmex': BitMEX,
 }
 
 export const ExchangeRepositoryFactory = {
@@ -171,37 +200,37 @@ export const ExchangeRepositoryFactory = {
 };
 
 
-(async function () {
-    const symbol = 'ETH-PERP'
-    const timeframe = '1h'
-    const since = Date.now() - 3 * 3600 * 1000
-    // const ftx = new ExchangeRepositories['ftx']()
-    const order: Order = {
-        orderName: 'test',
-        id: '16962050770',
-        symbol: symbol,
-        timestamp: 0,
-        type: 'limit',
-        side: "buy",
-        status: '',
-        amount: 0.001,
-        price: Math.random() * 30 + 450,
-        params: {},
-        expiration: Date.now(),
-    }
-    // console.log('await  ftx.fetchOHLCV() :>> ', await ftx.fetchOHLCV(symbol, timeframe, since,));
-    // await ftx.createOrders([order])
-    // await ftx.fetchOrders([order])
-    // await ftx.cancelOrders([order])
+// (async function () {
+//     const symbol = 'ETH-PERP'
+//     const timeframe = '1h'
+//     const since = Date.now() - 3 * 3600 * 1000
+//     // const ftx = new ExchangeRepositories['ftx']()
+//     const order: Order = {
+//         orderName: 'test',
+//         id: '16962050770',
+//         symbol: symbol,
+//         timestamp: 0,
+//         type: 'limit',
+//         side: "buy",
+//         status: '',
+//         amount: 0.001,
+//         price: Math.random() * 30 + 450,
+//         params: {},
+//         expiration: Date.now(),
+//     }
+//     // console.log('await  ftx.fetchOHLCV() :>> ', await ftx.fetchOHLCV(symbol, timeframe, since,));
+//     // await ftx.createOrders([order])
+//     // await ftx.fetchOrders([order])
+//     // await ftx.cancelOrders([order])
 
-    // await ftx.cancelOrders([order])
-    // const ftx2 = new CCXT['ftx']({
-    //     'apiKey': config.FTX.APIKEY,
-    //     'secret': config.FTX.APISECRET,
-    //     'enableRateLimit': true,
-    //     // 'verbose': true,
-    //     'options': { 'adjustForTimeDifference': true }
-    // })
-    // await ftx2.loadMarkets()
-    // console.log('ftx2.createOr`der(order) :>> ', await ftx2.createOrder(symbol, 'limit', 'buy', 0.001, 500));
-})()
+//     // await ftx.cancelOrders([order])
+//     // const ftx2 = new CCXT['ftx']({
+//     //     'apiKey': config.FTX.APIKEY,
+//     //     'secret': config.FTX.APISECRET,
+//     //     'enableRateLimit': true,
+//     //     // 'verbose': true,
+//     //     'options': { 'adjustForTimeDifference': true }
+//     // })
+//     // await ftx2.loadMarkets()
+//     // console.log('ftx2.createOr`der(order) :>> ', await ftx2.createOrder(symbol, 'limit', 'buy', 0.001, 500));
+// })()

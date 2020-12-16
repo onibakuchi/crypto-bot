@@ -1,7 +1,7 @@
 import { AbstractExchange } from '../exchanges/exchanges';
-import { Mediator } from './botInterface';
 import { Strategy } from '../strategy/strategy';
 import type { DatastoreInterface, Order } from '../datastore/datastoreInterface';
+import type { Mediator } from './botInterface';
 import CONFIG from '../config';
 import { pushMessage } from '../line';
 
@@ -83,9 +83,7 @@ export class Bot implements Mediator {
         else console.log('[Warning]:NOT_MATCHED');
     }
     public async init() { await this.datastore.init() }
-    public lineNotif(message: string) {
-        pushMessage(message);
-    }
+    public pushMessage(message: string) { pushMessage(message) }
     public async main() {
         if (
             this.datastore == undefined
