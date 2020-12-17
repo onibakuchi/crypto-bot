@@ -19,19 +19,6 @@ const run = (func, sec) => {
 };
 (async () => {
     const FTX = ExchangeRepositoryFactory.get('ftx')
-    const order: Order = {
-        orderName: 'test0',
-        id: '',
-        symbol: 'ETH-PERP',
-        timestamp: 0,
-        type: 'limit',
-        side: "buy",
-        status: '',
-        amount: 0.001,
-        price: Math.random() * 30 + 450,
-        params: {},
-        expiration: Date.now(),
-    }
     // console.log('await  ftx.fetchOHLCV() :>> ', await ftx.fetchOHLCV(symbol, timeframe, since,));
     // await ftx.fetchOrders([order])
 

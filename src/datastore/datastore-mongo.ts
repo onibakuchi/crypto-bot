@@ -5,9 +5,6 @@ import { BaseDatastore } from './datastore';
 export class DatastoreWithMongo extends BaseDatastore {
     public readonly db: MongoDatastoreInterface;
     protected readonly COLLECTION_NAME: string = 'orders';
-    // protected collections: CollectionRepository = {
-    //     orders: null
-    // }
     constructor() {
         super();
         this.db = new MongoDatastore();

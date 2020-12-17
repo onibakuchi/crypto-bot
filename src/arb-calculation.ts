@@ -1,6 +1,6 @@
 import { ExchangeRepositoryFactory } from './exchanges/exchanges';
 import CONFIG from './config';
-import ARB_CONFIG from '../arbitrageConfig.json';
+import ARB_CONFIG from './arbitrageConfig.json';
 import { pushMessage } from './line';
 
 const ftx = new (ExchangeRepositoryFactory.get('ftx'))();
