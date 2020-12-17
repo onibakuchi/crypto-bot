@@ -23,13 +23,16 @@ export default CONFIG = {
     "DB": {
         "URI": process.env.URI,
         "DB_NAME": process.env.DB_NAME,
-        "COLLECTION_NAME":process.env.COLLECTION_NAME,
+        "COLLECTION_NAME": process.env.COLLECTION_NAME,
         "DB_PASSWORD": process.env.MONGO_DB_PASSWORD,
     },
     "LINE": {
         "BEARER_ACCESS_TOKEN": process.env.BEARER_ACCESS_TOKEN,
         "USER_ID": process.env.USER_ID,
         "ALL_NOTIF": false
+    },
+    "ARB": {
+        "BASIS": process.env.BASIS
     },
     "CREDENTIALS": {
         "installed": {

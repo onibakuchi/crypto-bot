@@ -89,7 +89,7 @@ export class Bot implements Mediator {
             this.datastore == undefined
             || this.exchangeapi == undefined
             || this.strategies.length == 0
-        ) throw Error('[ERROR]: UNDEFINED_EXCHANGE_API_OR_DARASTORE');
+        ) throw Error('[ERROR]: UNDEFINED_EXCHANGE_API_OR_DARASTORE_OR_STRATEGY');
         // this.setActiveOrders();//FOR TEST
         await this.setOHLCV();
         await this.updateStatus();

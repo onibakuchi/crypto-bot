@@ -78,7 +78,7 @@ export abstract class BaseDatastore implements DatastoreInterface {
                 console.log('[Info]: Canceled Order<Order>', order);
             }
         }
-        this.setPosition();
+    this.setPosition();
     }
     public updatePreparedOrders(): void {
         const orders = this.preparedOrders.values()
