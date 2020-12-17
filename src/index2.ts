@@ -73,18 +73,22 @@ const main = async () => {
         const diffXRP2 = tckBb['ETH/JPY']['bid'] / tckFtx['ETH/USD']['bid'] * tckFtx['XRP/USD']['bid'] / tckBb['XRP/JPY']['bid'];
         console.log(`100 * ETHJPY / ETHUSD * XRPUSD / XRPJPY = `, (100 * diffXRP2)?.toFixed(2));
 
-        const arbBTCXRP = Object.assign({ ...template });
-        arbBTCXRP.xrpjpy = tckBb['XRP/JPY']['bid'];
-        arbBTCXRP.xrpusd = tckFtx['XRP/USD']['bid'];
-        arbBTCXRP.usdJpyFromCrypto = diffXRP;
+        const arbBTC = Object.assign({ ...template });
+        arbBTC.xrpjpy = tckBb['XRP/JPY']['bid'];
+        arbBTC.xrpusd = tckFtx['XRP/USD']['bid'];
+        arbBTC.toCryptoJPYdenomi = tckCc['BTC/JPY']['bid'];
+        arbBTC.toCryptoUSDdenomi = tckFtx['BTC/USD']['bid'];
 
-        const arbETHXRP2 = Object.assign({ ...template })
-        arbETHXRP2.xrpjpy = tckBb['XRP/JPY']['bid'];
-        arbBTCXRP.xrpusd = tckFtx['XRP/USD']['bid'];
-        arbETHXRP2.usdJpyFromCrypto = diffXRP2;
-        const tickers = { [symbols[0]]: arbBTCXRP, [symbols[1]]: arbETHXRP2 };
-        addCalculator(tickers, ARB_CONFIG);
-        console.log('tickers :>> ', tickers);
+        const arbETH = Object.assign({ ...template })
+        arbETH.xrpjpy = tckBb['XRP/JPY']['bid'];
+        arbETH.xrpusd = tckFtx['XRP/USD']['bid'];
+        arbETH.toCryptoJPYdenomi = tckBb['ETH/JPY']['bid'];
+        arbETH.toCryptoUSDdenomi = tckFtx['ETH/USD']['bid'];
+
+        const arbData = { [symbols[0]]: arbBTC, [symbols[1]]: arbETH };
+        addCalculator(arbData, ARB_CONFIG);
+        // console.log('arbData :>> ', arbData);
+        logger(arbData,true)
     }
     catch (e) {
         // await pushMessage(axiosBase, [{
@@ -96,11 +100,6 @@ const main = async () => {
 }
 const TIMEOUT = Number(process.env.TIMEOUT) || 3600 * 1000;
 const expiration = Date.now() + TIMEOUT;
-const arbNotif = (diffPercent, params) => {
-    if (Math.abs(diffPercent - 100) > Number(CONFIG.ARB.BASIS)) {
-
-    }
-}
 
 const addCalculator = (tickers: { [symbol: string]: Template }, arbitrageConfig): ArbObjects => {
     const calculator: ArbCalculator = {
@@ -112,10 +111,10 @@ const addCalculator = (tickers: { [symbol: string]: Template }, arbitrageConfig)
         },
         totalMoney: function () { return this.xrpjpy * this.quantity },
         profit: function () {
-            return this.quantity * (Math.abs(this.diffPercent()) * this.xrpjpy - this.tradeFeePercent * this.xrpjpy) / 100 - this.sendFeeCrypto * this.xrpjpy
+            return this.quantity * (Math.abs(this.diffPercent() - 100) * this.xrpjpy - this.tradeFeePercent * this.xrpjpy) / 100 - this.sendFeeCrypto * this.xrpjpy
         },
         expectedReturn: function () {
-            return 100 * this.profit() / this.totalMoney();
+            return this.profit() / this.totalMoney();
         }
     }
     for (const [key, value] of Object.entries(tickers)) {
@@ -123,28 +122,30 @@ const addCalculator = (tickers: { [symbol: string]: Template }, arbitrageConfig)
         value["tradeFeePercent"] = parseFloat(arbitrageConfig[key]["tradeFeePercent"]);
         value["sendFeeCrypto"] = parseFloat(arbitrageConfig[key]["sendFeeCrypto"]);
         value["toCurrency"] = key;
+        value["usdJpyFromCrypto"] = value.toCryptoJPYdenomi / value.toCryptoUSDdenomi;
         Object.assign(value, calculator);
     }
     return tickers as unknown as ArbObjects
 }
 
-const logger = (dataset: ArbObjects) => {
+const logger = async (dataset: ArbObjects, push: Boolean) => {
     for (const key in dataset) {
         if (Object.prototype.hasOwnProperty.call(dataset, key)) {
             const el = dataset[key];
-            const message = {
-                type: "text",
-                text: `Currency > ${el.toCurrency}`
-                    + `割高 (bitbank比) % > ${el.diffPercent().toFixed(3)}`
-                    + `profit ¥ > ${el.profit().toFixed(1)}`
-                    + `expectedReturn % > ${el.expectedReturn()?.toFixed(3)}`
-                    + `XRPJPY ¥ > ${el.xrpjpy}`
-                    + `XRPUSD  $ > ${el.xrpusd}`
-                    + `裁定金額 ¥ > ${el.totalMoney().toFixed(1)}`
-                    + `取引量 > ${el.quantity.toFixed(2)}`
-                    + `送金手数料 ¥ > ${el.sendFeeJPY().toFixed(0)}`
-            };
-            console.log("[Info]:Log", message['text']);
+            const message = `Currency > ${el.toCurrency}\n`
+                + `裁定金額 ¥ > ${el.totalMoney().toFixed(1)}\n`
+                + `国外/国内比率 (bitbank比) % > ${el.diffPercent().toFixed(2)}\n`
+                + `profit ¥ > ${el.profit().toFixed(1)}\n`
+                + `expectedReturn % > ${el.expectedReturn()?.toFixed(3)}\n`
+                + `XRPJPY ¥ > ${el.xrpjpy}\n`
+                + `XRPUSD  $ > ${el.xrpusd}\n`
+                + `取引量 > ${el.quantity.toFixed(2)}\n`
+                + `送金手数料 ¥ > ${el.sendFeeJPY().toFixed(0)}\n`
+
+            console.log("[Info]:Log\n", message);
+            if (push && Math.abs(el.diffPercent() - 100) > Number(CONFIG.ARB.BASIS)) {
+                await pushMessage(message);
+            }
         }
     }
 }
