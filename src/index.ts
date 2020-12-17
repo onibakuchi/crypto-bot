@@ -41,7 +41,6 @@ const run = (func, sec) => {
     bot.setDatastore(DatastoreWithMongo)
     await bot.init();
     await bot.main();
-    bot.saveToDb();
     // setTimeout(async () => {
     //     await instance.main()
     // }, 5000);

@@ -81,6 +81,7 @@ export abstract class BaseDatastore implements DatastoreInterface {
                 this.activeOrders.delete(key);
                 console.log('[Info]: Canceled Order<Order>', order);
             }
+            if (order['status'] = 'pending') { ; }
         }
         this.setPosition();
     }

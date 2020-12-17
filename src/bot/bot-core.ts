@@ -1,9 +1,9 @@
 import { AbstractExchange } from '../exchanges/exchanges';
 import { Strategy } from '../strategy/strategy';
+import { pushMessage } from '../line';
+import CONFIG from '../config';
 import type { DatastoreInterface, Order } from '../datastore/datastore-interface';
 import type { Mediator } from './bot-interface';
-import CONFIG from '../config';
-import { pushMessage } from '../line';
 
 export class Bot implements Mediator {
     private exchangeapi: AbstractExchange;
@@ -38,7 +38,7 @@ export class Bot implements Mediator {
         console.log('[Info]: Done Excuting all strategies...');
     }
     private async setOHLCV() {
-        const ohlcv = await this.exchangeapi.fetchOHLCV(this.symbol, this.timeframe, Date.now() - 3600 * 3000)
+        const ohlcv = await this.exchangeapi.fetchOHLCV(this.symbol, this.timeframe, Date.now() - 3600 * 1000)
         this.datastore.setOHLCV(ohlcv);
         console.log('[Info] OHLCV :>> ', ohlcv);
     }
