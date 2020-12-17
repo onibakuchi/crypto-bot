@@ -1,4 +1,4 @@
-import { DatastoreInterface, Order } from "../datastore/datastoreInterface";
+import { DatastoreInterface, Order } from "../datastore/datastore-interface";
 import { pushMessage } from '../line';
 export abstract class BaseComponent {
     protected mediator: Mediator;
@@ -19,7 +19,7 @@ export interface Mediator {
     getDatastore(): DatastoreInterface;
     getOrders(kind: 'prepared' | 'active' | 'contracted'): IterableIterator<Order>;
     init(): Promise<void>;
-    main(): Promise<void>;
+    main(): Promise<Order[]>;
     saveToDb(): void;
     setDatastore(Datastore: new () => DatastoreInterface): void;
 }

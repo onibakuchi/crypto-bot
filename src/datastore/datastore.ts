@@ -1,4 +1,5 @@
-import { DatastoreInterface, DbDatastore, Order, Position, } from './datastoreInterface';
+import { DatastoreInterface, DbDatastore, Order, Position, } from './datastore-interface';
+import { pushMessage } from '../line';
 
 export abstract class BaseDatastore implements DatastoreInterface {
     db: DbDatastore = null;
@@ -47,7 +48,7 @@ export abstract class BaseDatastore implements DatastoreInterface {
             this.position.amountUSD = this.position.amount * this.position.avgOpenPrice;
         }
         console.log('[Info]: Position...\n', this.getPosition());
-        this.contractedOrders.clear();
+        // this.contractedOrders.clear();
         console.log('[Info]: Done updating position....');
     }
     public setPreparedOrders(orders: Order[]): void {
@@ -64,6 +65,9 @@ export abstract class BaseDatastore implements DatastoreInterface {
             }
         }
     }
+    protected async pushMessage(message: string): Promise<void> {
+        await pushMessage(message);
+    }
     public updateOrderStatus(): void {
         console.log('[Info]:Calling function updateOrderStatus...');
         const iterator: IterableIterator<[string, Order]> = this.activeOrders.entries();
@@ -78,7 +82,7 @@ export abstract class BaseDatastore implements DatastoreInterface {
                 console.log('[Info]: Canceled Order<Order>', order);
             }
         }
-    this.setPosition();
+        this.setPosition();
     }
     public updatePreparedOrders(): void {
         const orders = this.preparedOrders.values()

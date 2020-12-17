@@ -1,5 +1,5 @@
 import { Collection, Db, FilterQuery, MongoClient } from 'mongodb';
-import { DbDatastore, MinimalOrder } from './datastoreInterface';
+import { DbDatastore, MinimalOrder } from './datastore-interface';
 import CONFIG from '../config';
 
 const URI = `mongodb+srv://new_user0:${CONFIG.DB.DB_PASSWORD}@cluster0.idfhd.mongodb.net/${CONFIG.DB.DB_NAME}?retryWrites=true&w=majority`;
@@ -37,7 +37,7 @@ export type CollectionRepository = {
 }
 export class MongoDatastore implements MongoDatastoreInterface {
   protected client: MongoClient;
-  protected db: Db;
+  protected mongodb: Db;
   protected collections: CollectionRepository = {
     orders: null
   }
@@ -48,7 +48,7 @@ export class MongoDatastore implements MongoDatastoreInterface {
     });
   }
   public addCollection(collectionName: string) {
-    this.collections[collectionName] = this.db.collection(collectionName);
+    this.collections[collectionName] = this.mongodb.collection(collectionName);
   }
   public async bulkDelete(collection: Collection, orders: MinimalOrder[]) {
     if (orders.length == 0) return
@@ -73,8 +73,8 @@ export class MongoDatastore implements MongoDatastoreInterface {
   public async connect(): Promise<void> {
     try {
       await this.client.connect();
-      this.db = this.client.db(CONFIG.DB.DB_NAME);
-      this.collections.orders = this.db.collection(CONFIG.DB.COLLECTION_NAME);
+      this.mongodb = this.client.db(CONFIG.DB.DB_NAME);
+      this.collections.orders = this.mongodb.collection(CONFIG.DB.COLLECTION_NAME);
     } catch (e) {
       console.log('e :>> ', e);
       this.client.close();

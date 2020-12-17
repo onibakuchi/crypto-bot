@@ -1,7 +1,7 @@
 import { AbstractExchange } from '../exchanges/exchanges';
 import { Strategy } from '../strategy/strategy';
-import type { DatastoreInterface, Order } from '../datastore/datastoreInterface';
-import type { Mediator } from './botInterface';
+import type { DatastoreInterface, Order } from '../datastore/datastore-interface';
+import type { Mediator } from './bot-interface';
 import CONFIG from '../config';
 import { pushMessage } from '../line';
 
@@ -96,8 +96,12 @@ export class Bot implements Mediator {
         this.exeStrategy()
         await this.order()
         await this.cancel()
+        const contractedOrders = [...this.getDatastore().getContractedOrders().values()];
+        this.getDatastore().getContractedOrders().clear()
+        await this.saveToDb();
+        return contractedOrders;
     }
-    public saveToDb() { this.datastore.saveToDb() }
+    public async saveToDb() { await this.datastore.saveToDb() }
     public setExchange(ExchangeAPI: new () => AbstractExchange): void {
         this.exchangeapi = new ExchangeAPI()
     }

@@ -1,5 +1,5 @@
-import { BaseComponent } from '../bot/botInterface';
-import type { Order, Position } from '../datastore/datastoreInterface';
+import { BaseComponent } from '../bot/bot-interface';
+import type { Order, Position } from '../datastore/datastore-interface';
 import CONFIG from '../config';
 
 abstract class AbstractStrategy extends BaseComponent {
@@ -13,11 +13,16 @@ abstract class AbstractStrategy extends BaseComponent {
         this.init();
     }
     private init(): void {
-        this.MODE = CONFIG.TRADE.MODE.toLowerCase() == 'production';
-        this.SYMBOL = CONFIG.TRADE.SYMBOL;
-        this.PYRAMIDING = Number(CONFIG.TRADE.PYRAMIDING);
-        this.MAX_ACTIVE_ORDERS = Number(CONFIG.TRADE.MAX_ACTIVE_ORDERS);
-        this.MAX_LEVERAGE = Number(CONFIG.TRADE.MAX_LEVERAGE);
+        try {
+            this.MODE = CONFIG.TRADE.MODE.toLowerCase() == 'production';
+            this.SYMBOL = CONFIG.TRADE.SYMBOL;
+            this.PYRAMIDING = Number(CONFIG.TRADE.PYRAMIDING);
+            this.MAX_ACTIVE_ORDERS = Number(CONFIG.TRADE.MAX_ACTIVE_ORDERS);
+            this.MAX_LEVERAGE = Number(CONFIG.TRADE.MAX_LEVERAGE);
+        } catch (e) {
+            console.log('e :>> ', e);
+            process.exit(1);
+        }
     }
     public strategy(): Order[] {
         const newOrders: Order[] = [];

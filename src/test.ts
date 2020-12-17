@@ -16,4 +16,13 @@
         resolve(1)
     }, 100))
 
+    const reserve = new Map();
+    reserve.set('hofe',1);
+    reserve.set('hoge',12);
+    const  o = [...reserve.values()];
+    console.log('e :>> ', o);
+    reserve.clear();
+    console.log('o :>> ', o);
+    console.log('[...reserve.values()] :>> ', [...reserve.values()]);
+
 })()

@@ -1,7 +1,7 @@
 import { ExchangeRepositoryFactory } from './exchanges/exchanges';
-import type { Order } from './datastore/datastoreInterface';
-import { DatastoreWithMongo } from './datastore/datastoreMongo';
-import { Bot } from './bot/botCore';
+import type { Order } from './datastore/datastore-interface';
+import { DatastoreWithMongo } from './datastore/datastore-mongo';
+import { Bot } from './bot/bot-core';
 import { Strategy } from './strategy/strategy';
 
 const timeout = (sec) => {
@@ -20,8 +20,8 @@ const run = (func, sec) => {
 (async () => {
     const FTX = ExchangeRepositoryFactory.get('ftx')
     const order: Order = {
-        orderName: 'testIndex.ts',
-        id: '16962050770',
+        orderName: 'test0',
+        id: '',
         symbol: 'ETH-PERP',
         timestamp: 0,
         type: 'limit',

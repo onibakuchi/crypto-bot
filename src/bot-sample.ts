@@ -1,4 +1,4 @@
-import { Bot } from './bot/botCore';
+import { Bot } from './bot/bot-core';
 import { AbstractExchange, ExchangeRepositoryFactory } from './exchanges/exchanges';
 
 const event = {
