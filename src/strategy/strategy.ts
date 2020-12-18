@@ -2,7 +2,7 @@ import { BaseComponent } from '../bot/bot-interface';
 import type { Order, Position } from '../datastore/datastore-interface';
 import CONFIG from '../config';
 
-abstract class AbstractStrategy extends BaseComponent {
+export abstract class AbstractStrategy extends BaseComponent {
     protected MAX_ACTIVE_ORDERS: number;
     protected MAX_LEVERAGE: number;
     protected MODE: Boolean;
@@ -45,9 +45,6 @@ abstract class AbstractStrategy extends BaseComponent {
         console.log('newOrders :>> ', newOrders);
         return newOrders
     }
-    protected abstract algorithym(ohlcv: number[][], potision: Position, params?): Order[]
-    protected abstract exit(ohlcv: number[][], position: Position): Order[]
-    protected abstract hookWhenHavePosi(ohlcv: number[][], position: Position): Order[]
     protected limitOrder(name, side, amount, price, duration = 10 * 60, params = {}) {
         const template: Order = {
             orderName: name,
@@ -65,67 +62,33 @@ abstract class AbstractStrategy extends BaseComponent {
         const ord = Object.assign({}, template);
         return ord;
     }
+    protected abstract algorithym(ohlcv: number[][], potision: Position, params?): Order[]
+    protected abstract exit(ohlcv: number[][], position: Position): Order[]
+    protected abstract hookWhenHavePosi(ohlcv: number[][], position: Position): Order[]
     protected abstract testAlgorithym(ohlcv: number[][], position: Position): Order[]
 }
-export class Strategy extends AbstractStrategy {
+
+export class HigeCatchStrategy extends AbstractStrategy {
     protected algorithym(ohlcv: number[][], position: Position): Order[] {
         //  Non Reduce Only
         const orders = [];
-        const ord1 = this.order('hige4.8%', 'buy', 0.001, ohlcv[ohlcv.length - 1 - 4][4] * 0.952, 10 * 60)
-        const ord15 = this.order('hige5.4%', 'buy', 0.003, ohlcv[ohlcv.length - 1 - 4][4] * 0.946, 12 * 60)
-        const ord2 = this.order('hige5.8%', 'buy', 0.004, ohlcv[ohlcv.length - 1 - 4][4] * 0.942, 15 * 60)
-        const ord3 = this.order('hige6.3%', 'buy', 0.005, ohlcv[ohlcv.length - 1 - 4][4] * 0.937, 15 * 60)
+        const ord1 = this.limitOrder('hige4.8%', 'buy', 0.001, ohlcv[ohlcv.length - 1 - 4][4] * 0.952, 10 * 60)
+        const ord15 = this.limitOrder('hige5.4%', 'buy', 0.003, ohlcv[ohlcv.length - 1 - 4][4] * 0.946, 12 * 60)
+        const ord2 = this.limitOrder('hige5.8%', 'buy', 0.004, ohlcv[ohlcv.length - 1 - 4][4] * 0.942, 15 * 60)
+        const ord3 = this.limitOrder('hige6.3%', 'buy', 0.005, ohlcv[ohlcv.length - 1 - 4][4] * 0.937, 15 * 60)
 
         orders.push(ord1, ord15, ord2, ord3)
         return orders;
     }
     protected exit(ohlcv: number[][], position: Position): Order[] { return }
     protected hookWhenHavePosi(ohlcv: number[][], position: Position): Order[] {
-        const orders = this.order('settlement', 'sell', position.amount, position.avgOpenPrice + 300, 20 * 60)
+        const orders = this.limitOrder('settlement', 'sell', position.amount, position.avgOpenPrice + 300, 20 * 60)
         return [orders];
     }
     protected setAmounts() { }
     protected setPrices() { }
     protected testAlgorithym(ohlcv: number[][], position: Position): Order[] {
-        const order: Order = this.order('testOrder1', 'buy', 0.001, Math.random() * 30 + 430, 10 * 60)
-        return [order]
-    }
-    protected order(name, side, amount, price, duration = 10 * 60, params = {}) {
-        const template: Order = {
-            orderName: name,
-            id: '',
-            symbol: this.SYMBOL,
-            status: '',
-            side: side,
-            type: 'limit',
-            amount: amount,
-            timestamp: 0,
-            price: price,
-            params: params,
-            expiration: Date.now() + duration * 1000,
-        }
-        const ord = Object.assign({}, template);
-        return ord;
-    }
-}
-export class HigeCatchStrategy extends Strategy {
-    protected algorithym(ohlcv: number[][], position: Position): Order[] {
-        //  Non Reduce Only
-        const orders = [];
-        const ord1 = this.order('hige4.8%', 'buy', 0.001, ohlcv[ohlcv.length - 1 - 4][4] * 0.952, 10 * 60)
-        const ord15 = this.order('hige5.4%', 'buy', 0.003, ohlcv[ohlcv.length - 1 - 4][4] * 0.946, 12 * 60)
-        const ord2 = this.order('hige5.8%', 'buy', 0.004, ohlcv[ohlcv.length - 1 - 4][4] * 0.942, 15 * 60)
-        const ord3 = this.order('hige6.3%', 'buy', 0.005, ohlcv[ohlcv.length - 1 - 4][4] * 0.937, 15 * 60)
-
-        orders.push(ord1, ord15, ord2, ord3)
-        return orders;
-    }
-    protected hookWhenHavePosi(ohlcv: number[][], position: Position): Order[] {
-        const orders = this.order('settlement', 'sell', position.amount, position.avgOpenPrice + 300, 20 * 60)
-        return [orders];
-    }
-    protected testAlgorithym(ohlcv: number[][], position: Position): Order[] {
-        const order: Order = this.order('testOrder1', 'buy', 0.001, Math.random() * 30 + 430, 10 * 60)
+        const order: Order = this.limitOrder('testOrder1', 'buy', 0.001, Math.random() * 30 + 430, 10 * 60)
         return [order]
     }
 

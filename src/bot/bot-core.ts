@@ -1,19 +1,19 @@
 import { AbstractExchange } from '../exchanges/exchanges';
-import { Strategy } from '../strategy/strategy';
+import { AbstractStrategy } from '../strategy/strategy';
 import { pushMessage } from '../line';
 import CONFIG from '../config';
 import type { DatastoreInterface, Order } from '../datastore/datastore-interface';
 import type { Mediator } from './bot-interface';
 
 export class Bot implements Mediator {
-    private exchangeapi: AbstractExchange;
-    private strategies: Strategy[] = [];
-    private datastore: DatastoreInterface;
-    private MODE: string = CONFIG.TRADE.MODE;
+    private readonly MODE: string = CONFIG.TRADE.MODE;
     private readonly symbol: string = CONFIG.TRADE.SYMBOL;
     private timeframe: string = CONFIG.TRADE.TIMEFRAME;
+    private exchangeapi: AbstractExchange;
+    private strategies: AbstractStrategy[] = [];
+    private datastore: DatastoreInterface;
 
-    constructor(ExchangeAPI: new () => AbstractExchange, _strategies?: typeof Strategy[] | undefined) {
+    constructor(ExchangeAPI: new () => AbstractExchange, _strategies?: (new () => AbstractStrategy)[] | undefined) {
         this.exchangeapi = new ExchangeAPI()
         this.exchangeapi.setMediator(this);
         this.setStrategy(_strategies);
@@ -108,7 +108,7 @@ export class Bot implements Mediator {
     public setDatastore(Datastore: new () => DatastoreInterface): void {
         this.datastore = new Datastore();
     }
-    public setStrategy(_strategies: typeof Strategy[]): void {
+    public setStrategy(_strategies: (new (mediator) => AbstractStrategy)[]): void {
         if (_strategies instanceof Array) {
             _strategies.forEach(el => this.strategies.push(new el(this)));
         }

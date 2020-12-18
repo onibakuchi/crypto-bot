@@ -23,3 +23,7 @@ export interface Mediator {
     saveToDb(): void;
     setDatastore(Datastore: new () => DatastoreInterface): void;
 }
+
+export interface Strategy {
+    strategy(): Order[]
+}
