@@ -80,8 +80,8 @@ export class MongoDatastore implements MongoDatastoreInterface {
       this.collections.orders = this.mongodb.collection(CONFIG.DB.COLLECTION_NAME);
       console.log(`[Info]:DB_CONNECT \nDB_NAME:${CONFIG.DB.DB_NAME}\nCOLLECTION_NAME:${CONFIG.DB.COLLECTION_NAME}`);
     } catch (e) {
-      await this.client.close();
       console.log('e :>> ', e);
+      await this.client.close();
     }
   }
   public async findDocuments(name: string, query: FilterQuery<any> = {}): Promise<MinimalOrder[]> {
@@ -91,8 +91,8 @@ export class MongoDatastore implements MongoDatastoreInterface {
       console.log(result);
       return result
     } catch (e) {
-     await this.close()
       console.log('e :>> ', e);
+     await this.close()
     }
   }
   public async test() {

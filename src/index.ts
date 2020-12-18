@@ -2,7 +2,7 @@ import { ExchangeRepositoryFactory } from './exchanges/exchanges';
 import type { Order } from './datastore/datastore-interface';
 import { DatastoreWithMongo } from './datastore/datastore-mongo';
 import { Bot } from './bot/bot-core';
-import { Strategy } from './strategy/strategy';
+import { HigeCatchStrategy } from './strategy/strategy';
 
 const timeout = (sec) => {
     return new Promise((resolve) => {
@@ -19,19 +19,17 @@ const run = (func, sec) => {
 };
 (async () => {
     const FTX = ExchangeRepositoryFactory.get('ftx')
-    // console.log('await  ftx.fetchOHLCV() :>> ', await ftx.fetchOHLCV(symbol, timeframe, since,));
-    // await ftx.fetchOrders([order])
-
-    //
-    const bot = new Bot(FTX)
-    bot.setStrategy([Strategy])
+    // const BitMex = ExchangeRepositoryFactory.get('bitmex');
+    const bot = new Bot(FTX);
+    bot.setStrategy([HigeCatchStrategy])
     bot.setDatastore(DatastoreWithMongo)
     await bot.init();
     await bot.main();
-    // setTimeout(async () => {
-    //     await instance.main()
-    // }, 5000);
+    setTimeout(async () => {
+        await bot.main()
+    }, 5000);
     // const ftx = new FTX()
     // await ftx.createOrders([order])
-    // instance
+
+    // curl https://api.exchangeratesapi.io/latest?base=USD
 })()

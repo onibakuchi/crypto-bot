@@ -69,7 +69,7 @@ export abstract class AbstractExchange extends BaseComponent {
                     console.log('[ERROR]: INVALID_ORDER_PROPERTY <Order>:>>', order);
                     continue;
                 }
-                await this.pushMessage(e);
+                await this.pushMessage(JSON.stringify(e));
                 if (counts >= this.maxRetry) {
                     console.log('[ERROR]:Retry Failed');
                 } else {
@@ -174,7 +174,6 @@ class BitMEX extends AbstractExchange {
         super(mediator);
         this.setCCXT();
         this.CCXT.urls['api'] = this.CCXT.urls['test'];
-
     }
 }
 class CoinCheck extends AbstractExchange {

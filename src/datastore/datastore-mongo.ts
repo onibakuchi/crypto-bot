@@ -28,6 +28,7 @@ export class DatastoreWithMongo extends BaseDatastore {
            await this.pushMessage(e);
             if (!(e instanceof TypeError) && count <= 5) {
                 console.log('[Info]:Retry...');
+                await this.db.connect();
                 await this.saveToDb(count + 1);
             }
         }

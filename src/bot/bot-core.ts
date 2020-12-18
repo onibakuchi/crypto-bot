@@ -113,5 +113,4 @@ export class Bot implements Mediator {
             _strategies.forEach(el => this.strategies.push(new el(this)));
         }
     }
-
 }

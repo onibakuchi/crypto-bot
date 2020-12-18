@@ -46,9 +46,26 @@ abstract class AbstractStrategy extends BaseComponent {
         return newOrders
     }
     protected abstract algorithym(ohlcv: number[][], potision: Position, params?): Order[]
-    protected abstract testAlgorithym(ohlcv: number[][], position: Position): Order[]
-    protected abstract hookWhenHavePosi(ohlcv: number[][], position: Position): Order[]
     protected abstract exit(ohlcv: number[][], position: Position): Order[]
+    protected abstract hookWhenHavePosi(ohlcv: number[][], position: Position): Order[]
+    protected limitOrder(name, side, amount, price, duration = 10 * 60, params = {}) {
+        const template: Order = {
+            orderName: name,
+            id: '',
+            symbol: this.SYMBOL,
+            status: '',
+            side: side,
+            type: 'limit',
+            amount: amount,
+            timestamp: 0,
+            price: price,
+            params: params,
+            expiration: Date.now() + duration * 1000,
+        }
+        const ord = Object.assign({}, template);
+        return ord;
+    }
+    protected abstract testAlgorithym(ohlcv: number[][], position: Position): Order[]
 }
 export class Strategy extends AbstractStrategy {
     protected algorithym(ohlcv: number[][], position: Position): Order[] {
@@ -70,10 +87,10 @@ export class Strategy extends AbstractStrategy {
     protected setAmounts() { }
     protected setPrices() { }
     protected testAlgorithym(ohlcv: number[][], position: Position): Order[] {
-        const order: Order = this.order('testOrder1', 'buy', 0.001, Math.random() * 30 + 430)
+        const order: Order = this.order('testOrder1', 'buy', 0.001, Math.random() * 30 + 430, 10 * 60)
         return [order]
     }
-    private order(name, side, amount, price, duration = 10 * 60, params = {}) {
+    protected order(name, side, amount, price, duration = 10 * 60, params = {}) {
         const template: Order = {
             orderName: name,
             id: '',
@@ -90,4 +107,26 @@ export class Strategy extends AbstractStrategy {
         const ord = Object.assign({}, template);
         return ord;
     }
+}
+export class HigeCatchStrategy extends Strategy {
+    protected algorithym(ohlcv: number[][], position: Position): Order[] {
+        //  Non Reduce Only
+        const orders = [];
+        const ord1 = this.order('hige4.8%', 'buy', 0.001, ohlcv[ohlcv.length - 1 - 4][4] * 0.952, 10 * 60)
+        const ord15 = this.order('hige5.4%', 'buy', 0.003, ohlcv[ohlcv.length - 1 - 4][4] * 0.946, 12 * 60)
+        const ord2 = this.order('hige5.8%', 'buy', 0.004, ohlcv[ohlcv.length - 1 - 4][4] * 0.942, 15 * 60)
+        const ord3 = this.order('hige6.3%', 'buy', 0.005, ohlcv[ohlcv.length - 1 - 4][4] * 0.937, 15 * 60)
+
+        orders.push(ord1, ord15, ord2, ord3)
+        return orders;
+    }
+    protected hookWhenHavePosi(ohlcv: number[][], position: Position): Order[] {
+        const orders = this.order('settlement', 'sell', position.amount, position.avgOpenPrice + 300, 20 * 60)
+        return [orders];
+    }
+    protected testAlgorithym(ohlcv: number[][], position: Position): Order[] {
+        const order: Order = this.order('testOrder1', 'buy', 0.001, Math.random() * 30 + 430, 10 * 60)
+        return [order]
+    }
+
 }
