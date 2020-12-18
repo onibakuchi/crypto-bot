@@ -1,8 +1,8 @@
 import { AbstractExchange } from '../exchanges/exchanges';
 import { pushMessage } from '../line';
-import CONFIG from '../config';
-import type { DatastoreInterface, Order } from '../datastore/datastore-interface';
+import CONFIG from '../config/config';
 import type { Mediator, BaseStrategy } from './bot-interface';
+import type { DatastoreInterface, Order } from '../datastore/datastore-interface';
 
 export class Bot implements Mediator {
     private readonly MODE: string = CONFIG.TRADE.MODE;

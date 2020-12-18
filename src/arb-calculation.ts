@@ -1,6 +1,6 @@
 import { ExchangeRepositoryFactory } from './exchanges/exchanges';
-import CONFIG from './config';
-import ARB_CONFIG from './arbitrageConfig.json';
+import CONFIG from './config/config';
+import ARB_CONFIG from './config/arbitrageConfig.json';
 import { pushMessage } from './line';
 
 const ftx = new (ExchangeRepositoryFactory.get('ftx'))();
@@ -88,7 +88,7 @@ const main = async () => {
         const arbData = { [symbols[0]]: arbBTC, [symbols[1]]: arbETH };
         addCalculator(arbData, ARB_CONFIG);
         // console.log('arbData :>> ', arbData);
-        logger(arbData,true)
+        logger(arbData, true)
     }
     catch (e) {
         // await pushMessage(axiosBase, [{

@@ -1,6 +1,6 @@
 import { Collection, Db, FilterQuery, MongoClient } from 'mongodb';
 import { DbDatastore, MinimalOrder } from './datastore-interface';
-import CONFIG from '../config';
+import CONFIG from '../config/config';
 
 const URI = `mongodb+srv://new_user0:${CONFIG.DB.DB_PASSWORD}@cluster0.idfhd.mongodb.net/${CONFIG.DB.DB_NAME}?retryWrites=true&w=majority`;
 
@@ -27,7 +27,7 @@ export interface MongoDatastoreInterface extends DbDatastore {
   addConnection(name: string): void
   bulkDelete(name: string, Orders: MinimalOrder[]): Promise<void>;
   bulkUpsert(name: string, Orders: MinimalOrder[]): Promise<void>;
-  close():Promise<void>
+  close(): Promise<void>
   connect(): Promise<void>
   findDocuments(name: string, query?: FilterQuery<any>): Promise<MinimalOrder[]>
 }
@@ -66,10 +66,10 @@ export class MongoDatastore implements MongoDatastoreInterface {
     try {
       const result = (await this.collections[name].bulkWrite(makeOperations('update', orders))).result
       console.log('result :>> ', result);
-      await  this.close()
+      await this.close()
     } catch (e) {
       console.log('e :>> ', e);
-      await  this.close()
+      await this.close()
     }
   }
   public async close(): Promise<void> { await this.client.close() }
@@ -92,7 +92,7 @@ export class MongoDatastore implements MongoDatastoreInterface {
       return result
     } catch (e) {
       console.log('e :>> ', e);
-     await this.close()
+      await this.close()
     }
   }
   public async test() {

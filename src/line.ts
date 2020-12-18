@@ -1,5 +1,5 @@
 import axiosBase from 'axios';
-import CONFIG from './config';
+import CONFIG from './config/config';
 
 export const pushMessage = async (message: string, to = undefined) => {
     try {

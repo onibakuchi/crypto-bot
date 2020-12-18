@@ -1,7 +1,7 @@
 import CCXT from 'ccxt';
 import type { Order } from '../datastore/datastore-interface';
 import { BaseComponent, Mediator } from '../bot/bot-interface';
-import config from '../config';
+import config from '../config/config';
 
 export abstract class AbstractExchange extends BaseComponent {
     protected CCXT: CCXT.Exchange;

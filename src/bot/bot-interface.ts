@@ -1,5 +1,6 @@
 import { DatastoreInterface, Order } from "../datastore/datastore-interface";
 import { pushMessage } from '../line';
+
 export abstract class BaseComponent {
     protected mediator: Mediator;
 
