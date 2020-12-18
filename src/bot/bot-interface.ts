@@ -24,6 +24,7 @@ export interface Mediator {
     setDatastore(Datastore: new () => DatastoreInterface): void;
 }
 
-export interface Strategy {
-    strategy(): Order[]
+export abstract class BaseStrategy extends BaseComponent {
+    public abstract strategy(): Order[]
 }
+

@@ -1,8 +1,8 @@
-import { BaseComponent } from '../bot/bot-interface';
+import { BaseStrategy } from '../bot/bot-interface';
 import type { Order, Position } from '../datastore/datastore-interface';
 import CONFIG from '../config';
 
-export abstract class AbstractStrategy extends BaseComponent {
+export abstract class AbstractStrategy extends BaseStrategy {
     protected MAX_ACTIVE_ORDERS: number;
     protected MAX_LEVERAGE: number;
     protected MODE: Boolean;
