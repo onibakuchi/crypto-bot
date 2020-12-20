@@ -194,6 +194,15 @@ const ExchangeRepositories: {
     'bitmex': BitMEX,
 }
 
+const ExchangeRepositories2: {
+    [exchange: string]: AbstractExchange
+} = {
+    'bitbank': new BitBank(),
+    'coincheck': new CoinCheck(),
+    'ftx': new FTX(),
+    'bitmex': new BitMEX(),
+}
+
 export const ExchangeRepositoryFactory = {
     get: (name: string) => ExchangeRepositories[name]
 };
