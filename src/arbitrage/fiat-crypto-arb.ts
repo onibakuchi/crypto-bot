@@ -26,7 +26,7 @@ const template: Template = {
     sendFeeCrypto: 0,
     fiatOtherFee: 0
 }
-const main = async () => {
+export const fiatCryptoArb = async () => {
     try {
         const tckFtx = await ftx.fetchTickers(symbols.map(el => el + '/USD'))
         const tckBb = await bb.fetchTickers(symbols.map(el => el + '/JPY'));
@@ -56,4 +56,8 @@ const makeArbObj = (tckAbroad, tckJapan, symbol: string) => {
     return arbObj
 }
 
-repeat(main, 120, expiration)
+
+if (require.main != module) {
+    repeat(fiatCryptoArb, 120, expiration)
+}
+

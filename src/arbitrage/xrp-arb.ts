@@ -12,7 +12,6 @@ const ftx = new (ExchangeRepositoryFactory.get('ftx'))();
 const bb = new (ExchangeRepositoryFactory.get('bitbank'))();
 const cc = new (ExchangeRepositoryFactory.get('coincheck'))();
 
-
 const template: Template = {
     targetCrypto: target,
     baseCrypto: '',
@@ -26,7 +25,7 @@ const template: Template = {
     tradeFeePercent: 0,
     sendFeeCrypto: 0,
 }
-const main = async () => {
+export const xrpArb = async () => {
     try {
         const tckFtx = await ftx.fetchTickers(symbols.map(el => el + '/USD'))
         const tckBb = await bb.fetchTickers(symbols.map(el => el + '/JPY'));
@@ -63,5 +62,7 @@ const main = async () => {
     }
 }
 
-repeat(main, 120, expiration)
+if (require.main != module) {
+    repeat(xrpArb, 120, expiration);
+}
 
