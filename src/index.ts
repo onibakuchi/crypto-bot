@@ -1,5 +1,3 @@
-import { ExchangeRepositoryFactory } from './exchanges/exchanges';
-import type { Order } from './datastore/datastore-interface';
 import { DatastoreWithMongo } from './datastore/datastore-mongo';
 import { Bot } from './bot/bot-core';
 import { HigeCatchStrategy } from './strategy/strategy';
@@ -18,9 +16,10 @@ const run = (func, sec) => {
     promise.then(() => run(func, sec))
 };
 (async () => {
-    const FTX = ExchangeRepositoryFactory.get('ftx')
+    // const FTX = ExchangeRepositoryFactory.get('ftx')
     // const BitMex = ExchangeRepositoryFactory.get('bitmex');
-    const bot = new Bot(FTX);
+    // const bot = new Bot(FTX);
+    const bot = new Bot('ftx');
     bot.setStrategy([HigeCatchStrategy])
     bot.setDatastore(DatastoreWithMongo)
     await bot.init();

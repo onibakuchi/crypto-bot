@@ -206,6 +206,9 @@ const ExchangeRepositories2: {
 export const ExchangeRepositoryFactory = {
     get: (name: string) => ExchangeRepositories[name]
 };
+export const ExchangeRepositoryFactory2 = {
+    get: (name: string) => ExchangeRepositories2[name]
+};
 
 
 // (async function () {

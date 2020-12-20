@@ -1,4 +1,4 @@
-import { AbstractExchange } from '../exchanges/exchanges';
+import { AbstractExchange, ExchangeRepositoryFactory2 } from '../exchanges/exchanges';
 import { pushMessage } from '../notif/line';
 import CONFIG from '../config/config';
 import type { Mediator, BaseStrategy } from './bot-interface';
@@ -12,8 +12,8 @@ export class Bot implements Mediator {
     private strategies: BaseStrategy[] = [];
     private datastore: DatastoreInterface;
 
-    constructor(ExchangeAPI: new () => AbstractExchange, _strategies?: (new () => BaseStrategy)[] | undefined) {
-        this.exchangeapi = new ExchangeAPI()
+    constructor(exchangeId: string, _strategies?: (new () => BaseStrategy)[] | undefined) {
+        this.exchangeapi = ExchangeRepositoryFactory2.get(exchangeId);
         this.exchangeapi.setMediator(this);
         this.setStrategy(_strategies);
         console.log('[Info]: Launched...[mode]=', this.MODE);
