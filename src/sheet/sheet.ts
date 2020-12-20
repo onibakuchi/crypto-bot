@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import CONFIG from './config/config';
+import CONFIG from '../config/config';
 
 // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/request#updatecellsrequest
 // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/get

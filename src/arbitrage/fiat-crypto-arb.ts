@@ -1,7 +1,7 @@
 import { ExchangeRepositoryFactory } from '../exchanges/exchanges';
-import { repeat } from './repeat';
+import { repeat } from '../utils/repeat';
 import { addCryptoFiatCalculator, logger, requestFiatRate, Template } from './arb';
-import { pushMessage } from '../line';
+import { pushMessage } from '../notif/line';
 import CONFIG from '../config/config';
 
 const TIMEOUT = Number(process.env.TIMEOUT) || 3600 * 1000;

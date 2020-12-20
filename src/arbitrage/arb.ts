@@ -1,6 +1,6 @@
 import axiosBase from 'axios';
 import ARB_CONFIG from '../config/arbitrageConfig.json';
-import { pushMessage } from '../line';
+import { pushMessage } from '../notif/line';
 
 export interface Template {
     targetCrypto: string;

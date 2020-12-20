@@ -1,6 +1,6 @@
 import { ExchangeRepositoryFactory } from '../exchanges/exchanges';
 import { addCalculator, logger, Template, } from './arb';
-import { repeat } from './repeat';
+import { repeat } from '../utils/repeat';
 import CONFIG from '../config/config';
 
 const target = 'XRP';
@@ -65,5 +65,5 @@ const main = async () => {
     }
 }
 
-repeat(main,120,expiration)
+repeat(main, 120, expiration)
 

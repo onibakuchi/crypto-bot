@@ -1,5 +1,5 @@
 import { AbstractExchange } from '../exchanges/exchanges';
-import { pushMessage } from '../line';
+import { pushMessage } from '../notif/line';
 import CONFIG from '../config/config';
 import type { Mediator, BaseStrategy } from './bot-interface';
 import type { DatastoreInterface, Order } from '../datastore/datastore-interface';

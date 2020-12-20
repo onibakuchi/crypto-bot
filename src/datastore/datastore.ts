@@ -1,5 +1,5 @@
 import { DatastoreInterface, DbDatastore, Order, Position, } from './datastore-interface';
-import { pushMessage } from '../line';
+import { pushMessage } from '../notif/line';
 
 export abstract class BaseDatastore implements DatastoreInterface {
     db: DbDatastore = null;

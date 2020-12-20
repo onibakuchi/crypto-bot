@@ -1,4 +1,4 @@
-import { pushMessage } from './line';
+import { pushMessage } from './notif/line';
 
 (async () => {
     const test = (c = 0) => {
