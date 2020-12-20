@@ -1,6 +1,7 @@
 import { ExchangeRepositoryFactory } from '../exchanges/exchanges';
 import { addCalculator, logger, Template, } from './arb';
 import { repeat } from '../utils/repeat';
+import { pushMessage } from '../notif/line';
 import CONFIG from '../config/config';
 
 const target = 'XRP';
@@ -57,10 +58,7 @@ const main = async () => {
         logger(arbData, true, Number(CONFIG.ARB.BASIS));
     }
     catch (e) {
-        // await pushMessage(axiosBase, [{
-        // type: 'text',
-        // text: `[ERROR]: ${e}`
-        // }])
+        await pushMessage(e.message)
         console.log('[ERROR]:', e);
     }
 }
