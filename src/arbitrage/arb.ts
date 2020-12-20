@@ -106,18 +106,19 @@ export const logger = async (dataset: ArbObjects, push: Boolean, basis: number) 
     for (const key in dataset) {
         if (Object.prototype.hasOwnProperty.call(dataset, key)) {
             const el = dataset[key];
-            const message = `ベース通貨 > ${el.baseCrypto}\n`
-                + `ターゲット通貨 > ${el.targetCrypto}\n`
-                + `国外/国内比率 % > ${el.diffPercent()?.toFixed(2)}\n`
-                + `粗利益 ¥ > ${el.profit().toFixed(1)}\n`
-                + `収益率 % > ${el.expectedReturn()?.toFixed(3)}\n`
-                + `ターゲットJPY建 ¥ > ${el.targetCryptoJPY}\n`
-                + `ターゲットUSD建 $ > ${el.targetCryptoUSD}\n`
-                + `USDJPY > ${el.usdjpy}\n`
-                + `裁定金額 ¥ > ${el.totalMoney().toFixed(1)}\n`
-                + `取引量 > ${el.quantity.toFixed(2)}\n`
-                + `送金手数料 ¥ > ${el.sendFeeJPY().toFixed(0)}\n`
-                + `その他手数料 ¥ > ${el.fiatOtherFee?.toFixed(0)}\n`
+            const message = `ベース通貨:${el.baseCrypto}\n`
+                + `ターゲット通貨:${el.targetCrypto}\n`
+                + `国外/国内比率 %:${el.diffPercent()?.toFixed(3)}\n`
+                + `鞘 %:${(100 - el.diffPercent())?.toFixed(3)}\n`
+                + `粗利益 ¥:${el.profit().toFixed(1)}\n`
+                + `収益率 %:${el.expectedReturn()?.toFixed(3)}\n`
+                + `ターゲットJPY建 ¥:${el.targetCryptoJPY}\n`
+                + `ターゲットUSD建 $:${el.targetCryptoUSD}\n`
+                + `USDJPY:${el.usdjpy}\n`
+                + `裁定金額 ¥:${el.totalMoney().toFixed(0)}\n`
+                + `取引量:${el.quantity.toFixed(3)}\n`
+                + `送金手数料 ¥:${el.sendFeeJPY().toFixed(0)}\n`
+                + `その他手数料 ¥:${el.fiatOtherFee?.toFixed(0)}\n`
             console.log("[Info]:Log\n", message);
             if (push && Math.abs(el.diffPercent() - 100) > basis) {
                 await pushMessage(message);
