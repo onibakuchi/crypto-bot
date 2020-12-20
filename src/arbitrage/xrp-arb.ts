@@ -8,9 +8,10 @@ const target = 'XRP';
 const symbols = ['BTC', 'ETH', 'XRP'];
 const TIMEOUT = Number(process.env.TIMEOUT) || 3600 * 1000;
 const expiration = Date.now() + TIMEOUT;
-const ftx = new (ExchangeRepositoryFactory.get('ftx'))();
-const bb = new (ExchangeRepositoryFactory.get('bitbank'))();
-const cc = new (ExchangeRepositoryFactory.get('coincheck'))();
+
+const ftx = ExchangeRepositoryFactory.get('ftx');
+const bb = ExchangeRepositoryFactory.get('bitbank');
+const cc = ExchangeRepositoryFactory.get('coincheck');
 
 const template: Template = {
     targetCrypto: target,

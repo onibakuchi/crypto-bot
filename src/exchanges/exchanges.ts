@@ -186,15 +186,6 @@ class CoinCheck extends AbstractExchange {
 }
 
 const ExchangeRepositories: {
-    [exchange: string]: new () => AbstractExchange
-} = {
-    'bitbank': BitBank,
-    'coincheck': CoinCheck,
-    'ftx': FTX,
-    'bitmex': BitMEX,
-}
-
-const ExchangeRepositories2: {
     [exchange: string]: AbstractExchange
 } = {
     'bitbank': new BitBank(),
@@ -203,11 +194,9 @@ const ExchangeRepositories2: {
     'bitmex': new BitMEX(),
 }
 
+
 export const ExchangeRepositoryFactory = {
     get: (name: string) => ExchangeRepositories[name]
-};
-export const ExchangeRepositoryFactory2 = {
-    get: (name: string) => ExchangeRepositories2[name]
 };
 
 

@@ -9,8 +9,8 @@ const expiration = Date.now() + TIMEOUT;
 const target = 'USDJPY';
 const symbols = ['BTC', 'ETH', 'XRP'];
 
-const ftx = new (ExchangeRepositoryFactory.get('ftx'))();
-const bb = new (ExchangeRepositoryFactory.get('bitbank'))();
+const ftx = ExchangeRepositoryFactory.get('ftx');
+const bb = ExchangeRepositoryFactory.get('bitbank');
 
 const template: Template = {
     targetCrypto: target,

@@ -106,6 +106,7 @@ export const logger = async (dataset: ArbObjects, push: Boolean, basis: number) 
     for (const key in dataset) {
         if (Object.prototype.hasOwnProperty.call(dataset, key)) {
             const el = dataset[key];
+            const option = el.usdJpyFromCrypto ? `換算USDJPY:${el.usdJpyFromCrypto}\n` : ``;
             const message = `ベース通貨:${el.baseCrypto}\n`
                 + `ターゲット通貨:${el.targetCrypto}\n`
                 + `国外/国内比率 %:${el.diffPercent()?.toFixed(3)}\n`
@@ -115,6 +116,7 @@ export const logger = async (dataset: ArbObjects, push: Boolean, basis: number) 
                 + `ターゲットJPY建 ¥:${el.targetCryptoJPY}\n`
                 + `ターゲットUSD建 $:${el.targetCryptoUSD}\n`
                 + `USDJPY:${el.usdjpy}\n`
+                + option
                 + `裁定金額 ¥:${el.totalMoney().toFixed(0)}\n`
                 + `取引量:${el.quantity.toFixed(3)}\n`
                 + `送金手数料 ¥:${el.sendFeeJPY().toFixed(0)}\n`
