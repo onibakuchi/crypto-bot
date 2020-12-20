@@ -32,7 +32,8 @@ export default CONFIG = {
         "ALL_NOTIF": false
     },
     "ARB": {
-        "BASIS": process.env.BASIS
+        "BASIS": process.env.BASIS,
+        "FIAT_BASIS": process.env.FIAT_BASIS
     },
     "CREDENTIALS": {
         "installed": {

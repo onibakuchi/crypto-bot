@@ -113,6 +113,7 @@ export const logger = async (dataset: ArbObjects, push: Boolean, basis: number) 
                 + `収益率 % > ${el.expectedReturn()?.toFixed(3)}\n`
                 + `ターゲットJPY建 ¥ > ${el.targetCryptoJPY}\n`
                 + `ターゲットUSD建 $ > ${el.targetCryptoUSD}\n`
+                + `USDJPY > ${el.usdjpy}\n`
                 + `裁定金額 ¥ > ${el.totalMoney().toFixed(1)}\n`
                 + `取引量 > ${el.quantity.toFixed(2)}\n`
                 + `送金手数料 ¥ > ${el.sendFeeJPY().toFixed(0)}\n`

@@ -1,9 +1,11 @@
 import { ExchangeRepositoryFactory } from '../exchanges/exchanges';
-import CONFIG from '../config/config';
+import { repeat } from './repeat';
 import { addCryptoFiatCalculator, logger, requestFiatRate, Template } from './arb';
 import { pushMessage } from '../line';
+import CONFIG from '../config/config';
 
 const TIMEOUT = Number(process.env.TIMEOUT) || 3600 * 1000;
+const expiration = Date.now() + TIMEOUT;
 const target = 'USDJPY';
 const symbols = ['BTC', 'ETH', 'XRP'];
 
@@ -31,31 +33,27 @@ const main = async () => {
         const USDJPY = await requestFiatRate('USD', 'JPY');
         template.usdjpy = Number(USDJPY);
 
-        const arbXRP = Object.assign({ ...template });
-        arbXRP.targetCryptoJPY = tckBb['XRP/JPY']['bid'];
-        arbXRP.targetCryptoUSD = tckFtx['XRP/USD']['bid'];
-        arbXRP.usdJpyFromCrypto = tckBb['XRP/JPY']['bid'] / tckFtx['XRP/USD']['bid'];
+        const arbXRP = makeArbObj(tckFtx, tckBb, symbols[2]);
+        const arbETH = makeArbObj(tckFtx, tckBb, symbols[1]);
+        const arbBTC = makeArbObj(tckFtx, tckBb, symbols[0]);
 
-        const arbETH = Object.assign({ ...template })
-        arbETH.targetCryptoJPY = tckBb['ETH/JPY']['bid'];
-        arbETH.targetCryptoUSD = tckFtx['ETH/USD']['bid'];
-        arbETH.usdJpyFromCrypto = arbETH.targetCryptoJPY / arbETH.targetCryptoUSD;
-
-        const arbBTC = Object.assign({ ...template })
-        arbBTC.targetCryptoJPY = tckBb['BTC/JPY']['bid'];
-        arbBTC.targetCryptoUSD = tckFtx['BTC/USD']['bid'];
-        arbBTC.usdJpyFromCrypto = arbBTC.targetCryptoJPY / arbBTC.targetCryptoUSD;
-
-        const arbData = { [symbols[2]]: arbXRP,[symbols[0]]: arbBTC, [symbols[1]]: arbETH };
+        const arbData = { [symbols[2]]: arbXRP, [symbols[0]]: arbBTC, [symbols[1]]: arbETH };
         addCryptoFiatCalculator(arbData);
         // console.log('arbData :>> ', arbData);
-        logger(arbData, true, Number(CONFIG.ARB.BASIS));
+        logger(arbData, true, Number(CONFIG.ARB.FIAT_BASIS));
     }
     catch (e) {
-        await pushMessage(e)
+        await pushMessage(e.message)
         console.log('[ERROR]:', e);
     }
 }
 
+const makeArbObj = (tckAbroad, tckJapan, symbol: string) => {
+    const arbObj = Object.assign({ ...template });
+    arbObj.targetCryptoJPY = tckJapan[symbol + '/JPY']['bid'];
+    arbObj.targetCryptoUSD = tckAbroad[symbol + '/USD']['bid'];
+    arbObj.usdJpyFromCrypto = tckJapan[symbol + '/JPY']['bid'] / tckAbroad[symbol + '/USD']['bid'];
+    return arbObj
+}
 
-main();
+repeat(main, 120, expiration)

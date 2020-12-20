@@ -15,7 +15,4 @@ import { pushMessage } from './line';
     const prom1 = await new Promise(resolve => setTimeout(() => {
         resolve(1)
     }, 100))
-
-    await pushMessage('hogehoge')
-
 })()
