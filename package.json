@@ -1,11 +1,13 @@
 {
   "name": "catch-bot-v2",
   "version": "1.0.0",
-  "description": "",
+  "description": "crypro arbitrage",
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx ts-node -r dotenv/config src/index.ts"
+    "arb:xrp": "npx ts-node src/arbitrage/xrp-arb.ts",
+    "arb:fiat": "npx ts-node src/arbitrage/fiat-crypto-arb.ts",
+    "start": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
