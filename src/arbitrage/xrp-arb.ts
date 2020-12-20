@@ -1,7 +1,7 @@
-import { ExchangeRepositoryFactory } from './exchanges/exchanges';
-import CONFIG from './config/config';
-import ARB_CONFIG from './config/arbitrageConfig.json';
-import { pushMessage } from './line';
+import { ExchangeRepositoryFactory } from '../exchanges/exchanges';
+import CONFIG from '../config/config';
+import ARB_CONFIG from '../config/arbitrageConfig.json';
+import { pushMessage } from '../line';
 
 const ftx = new (ExchangeRepositoryFactory.get('ftx'))();
 const bb = new (ExchangeRepositoryFactory.get('bitbank'))();
