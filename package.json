@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "arb:xrp": "npx ts-node src/arbitrage/xrp-arb.ts",
     "arb:fiat": "npx ts-node src/arbitrage/fiat-crypto-arb.ts",
-    "arb": "npx ts-node src/arbitrage/starts.ts",
+    "arb": "npx ts-node src/arbitrage/start.ts",
     "start": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
