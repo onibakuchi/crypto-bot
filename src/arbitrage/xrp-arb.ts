@@ -1,6 +1,5 @@
 import { ExchangeRepositoryFactory } from '../exchanges/exchanges';
 import { addCalculator, logger, Template, } from './arb';
-import { repeat } from '../utils/repeat';
 import { pushMessage } from '../notif/line';
 import CONFIG from '../config/config';
 
@@ -63,7 +62,7 @@ export const xrpArb = async () => {
     }
 }
 
-if (require.main != module) {
-    repeat(xrpArb, 120, expiration);
+if (require.main == module) {
+    xrpArb();
 }
 

@@ -168,14 +168,14 @@ class FTX extends AbstractExchange {
     }
 }
 
-class BitMEX extends AbstractExchange {
-    protected exchangeId: string = 'bitmex';
-    constructor(mediator = null) {
-        super(mediator);
-        this.setCCXT();
-        this.CCXT.urls['api'] = this.CCXT.urls['test'];
-    }
-}
+// class BitMEX extends AbstractExchange {
+//     protected exchangeId: string = 'bitmex';
+//     constructor(mediator = null) {
+//         super(mediator);
+//         this.setCCXT();
+//         this.CCXT.urls['api'] = this.CCXT.urls['test'];
+//     }
+// }
 class CoinCheck extends AbstractExchange {
     protected readonly ONLY_PUBLIC = true;
     protected exchangeId: string = 'coincheck';
@@ -191,7 +191,7 @@ const ExchangeRepositories: {
     'bitbank': new BitBank(),
     'coincheck': new CoinCheck(),
     'ftx': new FTX(),
-    'bitmex': new BitMEX(),
+    // 'bitmex': new BitMEX(),
 }
 
 

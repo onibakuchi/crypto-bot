@@ -1,5 +1,4 @@
 import { ExchangeRepositoryFactory } from '../exchanges/exchanges';
-import { repeat } from '../utils/repeat';
 import { addCryptoFiatCalculator, logger, requestFiatRate, Template } from './arb';
 import { pushMessage } from '../notif/line';
 import CONFIG from '../config/config';
@@ -57,7 +56,7 @@ const makeArbObj = (tckAbroad, tckJapan, symbol: string) => {
 }
 
 
-if (require.main != module) {
-    repeat(fiatCryptoArb, 120, expiration)
+if (require.main == module) {
+    fiatCryptoArb();
 }
 
