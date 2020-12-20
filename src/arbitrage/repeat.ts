@@ -1,7 +1,4 @@
-const TIMEOUT = Number(process.env.TIMEOUT) || 3600 * 1000;
-const expiration = Date.now() + TIMEOUT;
-
-const repeat = async (func: { (): Promise<void>; (): void; },) => {
+export const repeat = async (func: { (): Promise<void>; (): void; }, interval: number,expiration: number) => {
     // await new Promise(resolve => setTimeout(resolve, 25 * 1000));
     // repeat(func);
     try {
@@ -15,7 +12,7 @@ const repeat = async (func: { (): Promise<void>; (): void; },) => {
         process.exit(1)
     }
     setTimeout(() => {
-        repeat(func);
-    }, 120 * 1000);
+        repeat(func, interval,expiration);
+    }, interval * 1000);
 }
 

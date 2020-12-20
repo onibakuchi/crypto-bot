@@ -1,15 +1,16 @@
 import { ExchangeRepositoryFactory } from '../exchanges/exchanges';
-import { pushMessage } from '../line';
-import { ArbCalculator, ArbObjects, Template, } from './arb-interface';
+import { addCalculator, logger, Template, } from './arb';
+import { repeat } from './repeat';
 import CONFIG from '../config/config';
-import ARB_CONFIG from '../config/arbitrageConfig.json';
 
+const target = 'XRP';
+const symbols = ['BTC', 'ETH', 'XRP'];
+const TIMEOUT = Number(process.env.TIMEOUT) || 3600 * 1000;
+const expiration = Date.now() + TIMEOUT;
 const ftx = new (ExchangeRepositoryFactory.get('ftx'))();
 const bb = new (ExchangeRepositoryFactory.get('bitbank'))();
 const cc = new (ExchangeRepositoryFactory.get('coincheck'))();
 
-const target = 'XRP';
-const symbols = ['BTC', 'ETH', 'XRP'];
 
 const template: Template = {
     targetCrypto: target,
@@ -51,7 +52,7 @@ const main = async () => {
         arbETH.baseCryptoUSD = tckFtx['ETH/USD']['bid'];
 
         const arbData = { [symbols[0]]: arbBTC, [symbols[1]]: arbETH };
-        addCalculator(arbData, ARB_CONFIG);
+        addCalculator(arbData);
         // console.log('arbData :>> ', arbData);
         logger(arbData, true, Number(CONFIG.ARB.BASIS));
     }
@@ -63,55 +64,6 @@ const main = async () => {
         console.log('[ERROR]:', e);
     }
 }
-const TIMEOUT = Number(process.env.TIMEOUT) || 3600 * 1000;
-const expiration = Date.now() + TIMEOUT;
 
-const addCalculator = (tickers: { [symbol: string]: Template }, arbitrageConfig): ArbObjects => {
-    const calculator: ArbCalculator = {
-        diffPercent: function () {
-            return 100 * (this.usdJpyFromCrypto * this.targetCryptoUSD / this.targetCryptoJPY)
-        },
-        sendFeeJPY: function () {
-            return this.sendFeeCrypto * this.targetCryptoJPY;
-        },
-        totalMoney: function () { return this.targetCryptoJPY * this.quantity },
-        profit: function () {
-            return this.quantity * (Math.abs(this.diffPercent() - 100) * this.targetCryptoJPY - this.tradeFeePercent * this.targetCryptoJPY) / 100 - this.sendFeeCrypto * this.targetCryptoJPY
-        },
-        expectedReturn: function () {
-            return this.profit() / this.totalMoney();
-        }
-    }
-    for (const [key, value] of Object.entries(tickers)) {
-        value["quantity"] = parseFloat(arbitrageConfig[key]["size"]) / value["targetCryptoJPY"]
-        value["tradeFeePercent"] = parseFloat(arbitrageConfig[key]["tradeFeePercent"]);
-        value["sendFeeCrypto"] = parseFloat(arbitrageConfig[key]["sendFeeCrypto"]);
-        value["baseCrypto"] = key;
-        value["usdJpyFromCrypto"] = value.baseCryptoJPY / value.baseCryptoUSD;
-        Object.assign(value, calculator);
-    }
-    return tickers as unknown as ArbObjects
-}
+repeat(main,120,expiration)
 
-const logger = async (dataset: ArbObjects, push: Boolean,basis: number) => {
-    for (const key in dataset) {
-        if (Object.prototype.hasOwnProperty.call(dataset, key)) {
-            const el = dataset[key];
-            const message = `Currency > ${el.baseCrypto}\n`
-                + `裁定金額 ¥ > ${el.totalMoney().toFixed(1)}\n`
-                + `国外/国内比率 (bitbank比) % > ${el.diffPercent().toFixed(2)}\n`
-                + `profit ¥ > ${el.profit().toFixed(1)}\n`
-                + `expectedReturn % > ${el.expectedReturn()?.toFixed(3)}\n`
-                + `XRPJPY ¥ > ${el.targetCryptoJPY}\n`
-                + `XRPUSD  $ > ${el.targetCryptoUSD}\n`
-                + `取引量 > ${el.quantity.toFixed(2)}\n`
-                + `送金手数料 ¥ > ${el.sendFeeJPY().toFixed(0)}\n`
-
-            console.log("[Info]:Log\n", message);
-            if (push && Math.abs(el.diffPercent() - 100) > basis) {
-                await pushMessage(message);
-            }
-        }
-    }
-}
-main()

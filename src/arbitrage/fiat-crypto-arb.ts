@@ -1,23 +1,61 @@
-import CCXT from 'ccxt';
-import axiosBase from 'axios';
 import { ExchangeRepositoryFactory } from '../exchanges/exchanges';
 import CONFIG from '../config/config';
-import ARB_CONFIG from '../config/arbitrageConfig.json';
+import { addCryptoFiatCalculator, logger, requestFiatRate, Template } from './arb';
 import { pushMessage } from '../line';
+
+const TIMEOUT = Number(process.env.TIMEOUT) || 3600 * 1000;
+const target = 'USDJPY';
+const symbols = ['BTC', 'ETH', 'XRP'];
 
 const ftx = new (ExchangeRepositoryFactory.get('ftx'))();
 const bb = new (ExchangeRepositoryFactory.get('bitbank'))();
 
+const template: Template = {
+    targetCrypto: target,
+    baseCrypto: '',
+    usdjpy: 0,
+    usdJpyFromCrypto: 0,
+    targetCryptoJPY: 0,
+    targetCryptoUSD: 0,
+    baseCryptoJPY: 0,
+    baseCryptoUSD: 0,
+    quantity: 0,
+    tradeFeePercent: 0,
+    sendFeeCrypto: 0,
+    fiatOtherFee: 0
+}
 const main = async () => {
+    try {
+        const tckFtx = await ftx.fetchTickers(symbols.map(el => el + '/USD'))
+        const tckBb = await bb.fetchTickers(symbols.map(el => el + '/JPY'));
+        const USDJPY = await requestFiatRate('USD', 'JPY');
+        template.usdjpy = Number(USDJPY);
 
+        const arbXRP = Object.assign({ ...template });
+        arbXRP.targetCryptoJPY = tckBb['XRP/JPY']['bid'];
+        arbXRP.targetCryptoUSD = tckFtx['XRP/USD']['bid'];
+        arbXRP.usdJpyFromCrypto = tckBb['XRP/JPY']['bid'] / tckFtx['XRP/USD']['bid'];
 
+        const arbETH = Object.assign({ ...template })
+        arbETH.targetCryptoJPY = tckBb['ETH/JPY']['bid'];
+        arbETH.targetCryptoUSD = tckFtx['ETH/USD']['bid'];
+        arbETH.usdJpyFromCrypto = arbETH.targetCryptoJPY / arbETH.targetCryptoUSD;
+
+        const arbBTC = Object.assign({ ...template })
+        arbBTC.targetCryptoJPY = tckBb['BTC/JPY']['bid'];
+        arbBTC.targetCryptoUSD = tckFtx['BTC/USD']['bid'];
+        arbBTC.usdJpyFromCrypto = arbBTC.targetCryptoJPY / arbBTC.targetCryptoUSD;
+
+        const arbData = { [symbols[2]]: arbXRP,[symbols[0]]: arbBTC, [symbols[1]]: arbETH };
+        addCryptoFiatCalculator(arbData);
+        // console.log('arbData :>> ', arbData);
+        logger(arbData, true, Number(CONFIG.ARB.BASIS));
+    }
+    catch (e) {
+        await pushMessage(e)
+        console.log('[ERROR]:', e);
+    }
 }
 
-const requestFiatRate = async (base: string, target: string): Promise<any> => {
-    const rate = (await axiosBase.get('https://api.exchangeratesapi.io/latest?base=' + base.toUpperCase())).data.rates[target.toUpperCase()]
-    // https://www.freeforexapi.com/api/live?pairs=USDJPY
-    console.log(`${base.toUpperCase()}/${target.toUpperCase()}:${rate?.toFixed(3)}`);
-    return rate;
-}
 
 main();
