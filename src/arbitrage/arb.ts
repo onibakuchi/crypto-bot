@@ -86,7 +86,7 @@ export const addCryptoFiatCalculator = (tickers: { [symbol: string]: Template })
             return this.quantity * (Math.abs(this.diffPercent() - 100) * this.targetCryptoJPY - this.tradeFeePercent * this.targetCryptoJPY) / 100 - this.sendFeeCrypto * this.targetCryptoJPY - this.fiatOtherFee;
         },
         expectedReturn: function () {
-            return this.profit() / this.totalMoney();
+            return 100 * this.profit() / this.totalMoney();
         },
         totalFee: function () {
             return this.tradeFeePercent * this.targetCryptoJPY + this.sendFeeCrypto * this.targetCryptoJPY + (this.fiatOtherFee ?? 0);
@@ -111,7 +111,7 @@ export const logger = async (dataset: ArbObjects, push: Boolean, basis: number) 
                 + `ターゲット通貨:${el.targetCrypto}\n`
                 + `国外/国内比率 %:${el.diffPercent()?.toFixed(3)}\n`
                 + `鞘 %:${(100 - el.diffPercent())?.toFixed(3)}\n`
-                + `粗利益 ¥:${el.profit().toFixed(1)}\n`
+                + `利益 ¥:${el.profit().toFixed(1)}\n`
                 + `収益率 %:${el.expectedReturn()?.toFixed(3)}\n`
                 + `ターゲットJPY建 ¥:${el.targetCryptoJPY}\n`
                 + `ターゲットUSD建 $:${el.targetCryptoUSD}\n`
