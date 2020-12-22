@@ -24,8 +24,8 @@ export class DatastoreWithMongo extends BaseDatastore {
             await this.db.bulkUpsert(this.COLLECTION_NAME, data);
         } catch (e) {
             console.log('[ERROR]:FAILED_DB_REQUEST', e);
-            await this.db.close();
-            await this.pushMessage(e);
+            this.db.close();
+            this.pushMessage(e);
             if (!(e instanceof TypeError) && count <= 5) {
                 console.log('[Info]:Retry...');
                 await this.db.connect();

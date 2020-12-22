@@ -7,7 +7,7 @@ const INTERVAL = Number(process.env.INTERVAL) || 180
 const expiration = Date.now() + TIMEOUT;
 (async () => {
     repeat(xrpArb, INTERVAL, expiration);
-    await new Promise(resolve => setTimeout(resolve, 60 * 1000));
+    // await new Promise(resolve => setTimeout(resolve, 5 * 1000));
     repeat(fiatCryptoArb, INTERVAL, expiration);
 })().catch(e => {
     console.log('e :>> ', e);

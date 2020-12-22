@@ -25,7 +25,9 @@ const run = (func, sec) => {
     await bot.init();
     await bot.main();
     setTimeout(async () => {
+        console.log('-------------');
         await bot.main()
+        console.log('-------------');
     }, 5000);
     // const ftx = new FTX()
     // await ftx.createOrders([order])

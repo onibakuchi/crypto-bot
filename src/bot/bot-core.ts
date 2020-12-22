@@ -37,7 +37,7 @@ export class Bot implements Mediator {
         console.log('[Info]: Done Excuting all strategies...');
     }
     private async setOHLCV() {
-        const ohlcv = await this.exchangeapi.fetchOHLCV(this.symbol, this.timeframe, Date.now() - 3600 * 1000)
+        const ohlcv = await this.exchangeapi.fetchOHLCV(this.symbol, this.timeframe, Date.now() - 300 * 1000)
         this.datastore.setOHLCV(ohlcv);
         console.log('[Info] OHLCV :>> ', ohlcv);
     }
