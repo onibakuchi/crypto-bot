@@ -15,7 +15,7 @@ export class DatastoreWithMongo extends BaseDatastore {
         data.forEach(order => {
             if (('orderName' in order) && ('id' in order)) {
                 switch (order['orderName']) {
-                    case 'buy':
+                    case 'open':
                     case 'pending':
                         this.activeOrders.set(order['orderName'], order);
                         break;
