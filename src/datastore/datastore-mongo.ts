@@ -14,9 +14,20 @@ export class DatastoreWithMongo extends BaseDatastore {
         const data = (await this.db.findDocuments(this.COLLECTION_NAME, {})) as Order[]
         data.forEach(order => {
             if (('orderName' in order) && ('id' in order)) {
-                this.activeOrders.set(order['orderName'], order);
+                switch (order['orderName']) {
+                    case 'buy':
+                    case 'pending':
+                        this.activeOrders.set(order['orderName'], order);
+                        break;
+                    case 'closed':
+                        this.contractedOrders.set(order['orderName'], order);
+                        break;
+                    default:
+                        console.log('[Warn]: NO_MATCH_STATUS');
+                }
             }
         });
+        this.setPosition();
     }
     public saveToDb = async (count = 0) => {
         try {
