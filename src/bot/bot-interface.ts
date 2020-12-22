@@ -22,6 +22,8 @@ export interface Mediator {
     init(): Promise<void>;
     main(): Promise<Order[]>;
     saveToDb(): void;
+    start(): Promise<void>;
+    stop(): Promise<void>;
     setDatastore(Datastore: new () => DatastoreInterface): void;
 }
 

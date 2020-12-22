@@ -132,8 +132,14 @@ export const logger = async (dataset: ArbObjects, push: Boolean, basis: number) 
 }
 
 export const requestFiatRate = async (base: string, target: string): Promise<any> => {
-    const rate = (await axiosBase.get('https://api.exchangeratesapi.io/latest?base=' + base.toUpperCase())).data.rates[target.toUpperCase()]
+    // const rate = (await axiosBase.get('https://api.exchangeratesapi.io/latest?base=' + base.toUpperCase())).data.rates[target.toUpperCase()]
     // https://www.freeforexapi.com/api/live?pairs=USDJPY
-    console.log(`${base.toUpperCase()}/${target.toUpperCase()}:${rate?.toFixed(3)}`);
-    return rate;
+    // http://www.gaitameonline.com/rateaj/getrate
+    const data = (await axiosBase.get('http://www.gaitameonline.com/rateaj/getrate')).data
+    for (const rate of data.quotes) {
+        if (rate.currencyPairCode == 'USDJPY') {
+            return (Number(rate.ask) + Number(rate.bid)) / 2
+        }
+    }
+    // console.log(`${base.toUpperCase()}/${target.toUpperCase()}:${rate?.toFixed(3)}`);
 }

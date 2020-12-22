@@ -11,6 +11,7 @@ export class Bot implements Mediator {
     private exchangeapi: AbstractExchange;
     private strategies: BaseStrategy[] = [];
     private datastore: DatastoreInterface;
+    private timer: NodeJS.Timeout;
 
     constructor(exchangeId: string, _strategies?: (new () => BaseStrategy)[] | undefined) {
         this.exchangeapi = ExchangeRepositoryFactory.get(exchangeId);
@@ -101,6 +102,15 @@ export class Bot implements Mediator {
         return contractedOrders;
     }
     public async saveToDb() { await this.datastore.saveToDb() }
+    public async start(): Promise<void> {
+        await this.init();
+        this.timer = setInterval(() => this.main(), Number(CONFIG.INTERVAL));
+    }
+    public async stop(): Promise<void> {
+        if (this.timer) {
+            clearInterval(this.timer);
+        }
+    }
     public setExchange(ExchangeAPI: new () => AbstractExchange): void {
         this.exchangeapi = new ExchangeAPI()
     }

@@ -3,8 +3,6 @@ import { addCryptoFiatCalculator, logger, requestFiatRate, Template } from './ar
 import { pushMessage } from '../notif/line';
 import CONFIG from '../config/config';
 
-const TIMEOUT = Number(process.env.TIMEOUT) || 3600 * 1000;
-const expiration = Date.now() + TIMEOUT;
 const target = 'USDJPY';
 const symbols = ['BTC', 'ETH', 'XRP'];
 

@@ -12,6 +12,7 @@ export default CONFIG = {
         "APIKEY": process.env.BITMEX_APIKEY,
         "APISECRET": process.env.BITMEX_APISECRET
     },
+    "INTERVAL": process.env.INTERVAL,
     "TRADE": {
         "MODE": process.env.MODE,
         "SYMBOL": process.env.SYMBOL,

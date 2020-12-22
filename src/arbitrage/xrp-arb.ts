@@ -5,8 +5,6 @@ import CONFIG from '../config/config';
 
 const target = 'XRP';
 const symbols = ['BTC', 'ETH', 'XRP'];
-const TIMEOUT = Number(process.env.TIMEOUT) || 3600 * 1000;
-const expiration = Date.now() + TIMEOUT;
 
 const ftx = ExchangeRepositoryFactory.get('ftx');
 const bb = ExchangeRepositoryFactory.get('bitbank');

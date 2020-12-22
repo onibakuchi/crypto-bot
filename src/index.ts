@@ -29,8 +29,7 @@ const run = (func, sec) => {
         await bot.main()
         console.log('-------------');
     }, 5000);
-    // const ftx = new FTX()
-    // await ftx.createOrders([order])
-
     // curl https://api.exchangeratesapi.io/latest?base=USD
+    //http://www.gaitameonline.com/rateaj/getrate
+
 })()

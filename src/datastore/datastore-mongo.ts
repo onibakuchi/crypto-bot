@@ -23,7 +23,7 @@ export class DatastoreWithMongo extends BaseDatastore {
                         this.contractedOrders.set(order['orderName'], order);
                         break;
                     default:
-                        console.log('[Warn]: NO_MATCH_STATUS');
+                        console.log('[Warn]: INVALID_STATUS');
                 }
             }
         });
