@@ -1,6 +1,5 @@
 import { BaseStrategy } from '../bot/bot-interface';
 import type { Order, Position } from '../datastore/datastore-interface';
-import CONFIG from '../config/config';
 
 export abstract class AbstractStrategy extends BaseStrategy {
     protected MAX_ACTIVE_ORDERS: number;
@@ -10,15 +9,14 @@ export abstract class AbstractStrategy extends BaseStrategy {
     protected SYMBOL: string;
     constructor(mediator = null) {
         super(mediator);
-        this.init();
     }
-    private init(): void {
+    public init(config: { MODE: any; SYMBOL: any; MAX_ACTIVE_ORDERS: any; MAX_LEVERAGE: any; PYRAMIDING: any; TIMEFRAME?: string; }): void {
         try {
-            this.MAX_ACTIVE_ORDERS = Number(CONFIG.TRADE.MAX_ACTIVE_ORDERS);
-            this.MAX_LEVERAGE = Number(CONFIG.TRADE.MAX_LEVERAGE);
-            this.MODE = CONFIG.TRADE.MODE.toLowerCase() == 'production';
-            this.PYRAMIDING = Number(CONFIG.TRADE.PYRAMIDING);
-            this.SYMBOL = CONFIG.TRADE.SYMBOL;
+            this.MAX_ACTIVE_ORDERS = Number(config.MAX_ACTIVE_ORDERS);
+            this.MAX_LEVERAGE = Number(config.MAX_LEVERAGE);
+            this.MODE = config.MODE.toLowerCase() == 'production';
+            this.PYRAMIDING = Number(config.PYRAMIDING);
+            this.SYMBOL = config.SYMBOL;
         } catch (e) {
             console.log('e :>> ', e);
             process.exit(1);

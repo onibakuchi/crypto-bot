@@ -28,6 +28,7 @@ export interface Mediator {
 }
 
 export abstract class BaseStrategy extends BaseComponent {
+    public abstract init(TRADE: { MODE: string; SYMBOL: string; MAX_ACTIVE_ORDERS: string; MAX_LEVERAGE: string; PYRAMIDING: string; TIMEFRAME: string; }): void
     public abstract strategy(): Order[]
 }
 

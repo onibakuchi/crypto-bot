@@ -4,7 +4,7 @@ import CONFIG from '../config/config';
 import type { Mediator, BaseStrategy } from './bot-interface';
 import type { DatastoreInterface, Order } from '../datastore/datastore-interface';
 
-export class Bot implements Mediator {
+export class App implements Mediator {
     private readonly MODE: string = CONFIG.TRADE.MODE;
     private readonly symbol: string = CONFIG.TRADE.SYMBOL;
     private timeframe: string = CONFIG.TRADE.TIMEFRAME;
@@ -82,7 +82,10 @@ export class Bot implements Mediator {
             return this.datastore.getContractedOrders().values();
         else console.log('[Warning]:NOT_MATCHED');
     }
-    public async init() { await this.datastore.init() }
+    public async init() {
+        await this.datastore.init();
+        this.strategies.forEach(el => el.init(CONFIG.TRADE));
+    }
     public pushMessage(message: string) { pushMessage(message) }
     public async main() {
         if (

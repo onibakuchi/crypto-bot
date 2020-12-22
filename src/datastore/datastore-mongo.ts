@@ -27,7 +27,6 @@ export class DatastoreWithMongo extends BaseDatastore {
                 }
             }
         });
-        this.setPosition();
     }
     public saveToDb = async (count = 0) => {
         try {
