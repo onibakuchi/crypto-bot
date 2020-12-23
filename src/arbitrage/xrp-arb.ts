@@ -58,8 +58,8 @@ export const xrpArb = async (): Promise<ArbObjects> => {
     }
 }
 
-export const recordXRPArb = async () => {
-    await record(xrpArb, CONFIG.SPREAD_SHEET.XRP_ARB_RANGE, column);
+export const recordXRPArb = async (range, column) => {
+    await record(xrpArb, range, column);
 }
 
 if (require.main == module) {

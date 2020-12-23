@@ -48,8 +48,8 @@ export const fiatCryptoArb = async (): Promise<ArbObjects> => {
     }
 }
 
-export const recordFiatArb = async () => {
-    await record(fiatCryptoArb, CONFIG.SPREAD_SHEET.FIAT_ARB_RANGE, column);
+export const recordFiatArb = async (range,column) => {
+    await record(fiatCryptoArb, range, column);
 }
 
 const makeArbObj = (tckAbroad, tckJapan, symbol: string) => {

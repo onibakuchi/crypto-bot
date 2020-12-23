@@ -17,9 +17,11 @@ export const record = async (func: () => Promise<ArbObjects>, range: string, col
     const values = column.reduce((prev, current) => {
         prev.push(arbData[current].targetCryptoJPY);
         prev.push(arbData[current].targetCryptoUSD);
+        prev.push(arbData[current].usdjpy);
+        prev.push(arbData[current].usdJpyFromCrypto);
         prev.push(arbData[current].diffPercent());
         return prev;
-    }, []);
+    }, []) as any[];
     values.unshift((new Date).toISOString());
     appendRequest.resource.values.push(values);
     await sheetAPI(append, appendRequest);
