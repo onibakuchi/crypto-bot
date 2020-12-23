@@ -38,7 +38,7 @@ export default CONFIG = {
     },
     "CREDENTIALS": {
         "installed": {
-            "clien_id": process.env.client_id,
+            "client_id": process.env.client_id,
             "client_secret": process.env.client_secret,
             "redirect_uris": [
                 "urn:ietf:wg:oauth:2.0:oob",
@@ -54,6 +54,8 @@ export default CONFIG = {
         "expiry_date": 1605062558223
     },
     "SPREAD_SHEET": {
-        "SHEET_ID": process.env.SHEET_ID
+        "SHEET_ID": process.env.SHEET_ID,
+        "FIAT_ARB_RANGE": process.env.FIAR_ARB_RANGE,
+        "XRP_ARB_RANGE": process.env.XRP_ARB_RANGE
     }
 }

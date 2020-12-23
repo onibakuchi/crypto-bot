@@ -1,10 +1,12 @@
 import { ExchangeRepositoryFactory } from '../exchanges/exchanges';
-import { addCalculator, logger, Template, } from './arb';
+import { addCalculator, ArbObjects, logger, Template, } from './arb';
 import { pushMessage } from '../notif/line';
+import { record } from './record';
 import CONFIG from '../config/config';
 
 const target = 'XRP';
 const symbols = ['BTC', 'ETH', 'XRP'];
+const column = ['BTC', 'ETH'];
 
 const ftx = ExchangeRepositoryFactory.get('ftx');
 const bb = ExchangeRepositoryFactory.get('bitbank');
@@ -23,7 +25,7 @@ const template: Template = {
     tradeFeePercent: 0,
     sendFeeCrypto: 0,
 }
-export const xrpArb = async () => {
+export const xrpArb = async (): Promise<ArbObjects> => {
     try {
         const tckFtx = await ftx.fetchTickers(symbols.map(el => el + '/USD'))
         const tckBb = await bb.fetchTickers(symbols.map(el => el + '/JPY'));
@@ -53,11 +55,16 @@ export const xrpArb = async () => {
         addCalculator(arbData);
         // console.log('arbData :>> ', arbData);
         logger(arbData, true, Number(CONFIG.ARB.BASIS));
+        return arbData;
     }
     catch (e) {
         await pushMessage(e.message)
         console.log('[ERROR]:', e);
     }
+}
+
+export const recordXRPArb = async () => {
+    await record(xrpArb, CONFIG.SPREAD_SHEET.XRP_ARB_RANGE, column);
 }
 
 if (require.main == module) {

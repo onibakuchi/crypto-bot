@@ -4,7 +4,7 @@
  * @param interval interval second
  * @param expiration unix time (ms)
  */
-export const repeat = async (func: { (): Promise<void>; (): void; }, interval: number, expiration: number) => {
+export const repeat = async (func: { (): Promise<any>; (): any; }, interval: number, expiration: number) => {
     // await new Promise(resolve => setTimeout(resolve, 25 * 1000));
     // repeat(func);
     try {

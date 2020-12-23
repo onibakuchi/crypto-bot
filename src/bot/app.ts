@@ -19,7 +19,7 @@ export class App implements Mediator {
         this.setStrategy(_strategies);
         console.log('[Info]: Launched...[mode]=', this.MODE);
     }
-    private exeStrategy() {
+    private execute() {
         console.log(`[Info]: Excute strategies....`);
         if (this.datastore.getOHCV()) {
             for (const strategy of this.strategies) {
@@ -96,7 +96,7 @@ export class App implements Mediator {
         // this.setActiveOrders();//FOR TEST
         await this.setOHLCV();
         await this.updateStatus();
-        this.exeStrategy()
+        this.execute()
         await this.order()
         await this.cancel()
         const contractedOrders = [...this.getDatastore().getContractedOrders().values()];
