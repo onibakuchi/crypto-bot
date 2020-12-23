@@ -67,10 +67,10 @@
   "include": [
     "./src",
   ],
-  // "exclude": [
-  //   "pure-hardhat",
-  //   "./test/waffle"
-  // ],
+  "exclude": [
+    "./src/patterns/",
+    "./src/datastore/sample.js"
+  ],
   // "files": [
   //   "src/index.ts"
   // ]
