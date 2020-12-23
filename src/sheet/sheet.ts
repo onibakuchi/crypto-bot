@@ -5,16 +5,6 @@ import CONFIG from '../config/config';
 // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/get
 // https://qiita.com/vicugna-pacos/items/f7bb0d97bbaa1371edc8
 
-export const appendBody = {
-    spreadsheetId: CONFIG.SPREAD_SHEET.SHEET_ID,
-    range: '',
-    insertDataOption: 'INSERT_ROWS',
-    valueInputOption: 'USER_ENTERED',
-    resource: {
-        values: []
-    }
-};
-
 export async function sheetAPI(callback, data) {
     try {
         const { client_id, client_secret, redirect_uris } = CONFIG.CREDENTIALS.installed;

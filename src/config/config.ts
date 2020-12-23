@@ -55,7 +55,7 @@ export default CONFIG = {
     },
     "SPREAD_SHEET": {
         "SHEET_ID": process.env.SHEET_ID,
-        "FIAT_ARB_RANGE": process.env.FIAR_ARB_RANGE,
+        "FIAT_ARB_RANGE": process.env.FIAT_ARB_RANGE,
         "XRP_ARB_RANGE": process.env.XRP_ARB_RANGE
     }
 }
