@@ -16,13 +16,10 @@ import axios from 'axios';
         resolve(1)
     }, 100))
 
-    const data = (await axios.get('http://www.gaitameonline.com/rateaj/getrate')).data
-    for (const value of data.quotes) {
-        if (value.currencyPairCode == 'USDJPY') {
-            console.log((Number(value.ask) + Number(value.bid)) / 2);
-            return (Number(value.ask) + Number(value.bid)) / 2
-        }
-    }
+    const timer = setInterval(() => console.log('hoge'), 5000);
+    // timer.refresh();
+    timer.refresh();
+    // setInterval(() => timer.refresh(), 500);
     // https://www.freeforexapi.com/api/live?pairs=USDJPY
     // http://www.gaitameonline.com/rateaj/getrate
 

@@ -108,6 +108,7 @@ export class App implements Mediator {
     public async start(): Promise<void> {
         await this.init();
         this.timer = setInterval(() => this.main(), Number(CONFIG.INTERVAL));
+        // this.timer.refresh();
     }
     public async stop(): Promise<void> {
         if (this.timer) {

@@ -9,12 +9,12 @@ const makeOperations = (option: 'update' | 'delete', orders: MinimalOrder[]) => 
   switch (option) {
     case 'update':
       for (const order of orders) {
-        op.push({ updateOne: { "filter": { "id": order.id }, "update": { $set: order }, "upsert": true } });
+        op.push({ updateOne: { "filter": { "orderName": order.orderName }, "update": { $set: order }, "upsert": true } });
       }
       break;
     case 'delete':
       for (const order of orders) {
-        op.push({ deleteOne: { "filter": { "id": order.id } } });
+        op.push({ deleteOne: { "filter": { "orderName": order.orderName } } });
       }
       break;
     default:

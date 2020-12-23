@@ -137,7 +137,8 @@ export const requestFiatRate = async (base: string, target: string): Promise<any
     // http://www.gaitameonline.com/rateaj/getrate
     const data = (await axiosBase.get('http://www.gaitameonline.com/rateaj/getrate')).data
     for (const rate of data.quotes) {
-        if (rate.currencyPairCode == 'USDJPY') {
+        if (rate.currencyPairCode == `${base}${target}`.toUpperCase()) {
+            console.log('rate :>> ', (Number(rate.ask) + Number(rate.bid)) / 2);
             return (Number(rate.ask) + Number(rate.bid)) / 2
         }
     }

@@ -70,12 +70,12 @@ export class HigeCatchStrategy extends AbstractStrategy {
     protected algorithym(ohlcv: number[][], position: Position): Order[] {
         //  Non Reduce Only
         const orders = [];
-        const ord1 = this.limitOrder('hige4.8%', 'buy', 0.001, ohlcv[ohlcv.length - 1 - 4][4] * 0.952, 10 * 60)
-        const ord15 = this.limitOrder('hige5.4%', 'buy', 0.003, ohlcv[ohlcv.length - 1 - 4][4] * 0.946, 12 * 60)
-        const ord2 = this.limitOrder('hige5.8%', 'buy', 0.004, ohlcv[ohlcv.length - 1 - 4][4] * 0.942, 15 * 60)
-        const ord3 = this.limitOrder('hige6.3%', 'buy', 0.005, ohlcv[ohlcv.length - 1 - 4][4] * 0.937, 15 * 60)
+        const ord1 = this.limitOrder('hige3.4%', 'buy', 0.001, ohlcv[ohlcv.length - 1 - 4][4] * 0.966, 5 * 60)
+        const ord15 = this.limitOrder('hige4.4%', 'buy', 0.003, ohlcv[ohlcv.length - 1 - 4][4] * 0.956, 12 * 60)
+        // const ord2 = this.limitOrder('hige5.8%', 'buy', 0.004, ohlcv[ohlcv.length - 1 - 4][4] * 0.942, 15 * 60)
+        // const ord3 = this.limitOrder('hige6.3%', 'buy', 0.005, ohlcv[ohlcv.length - 1 - 4][4] * 0.937, 15 * 60)
 
-        orders.push(ord1, ord15, ord2, ord3)
+        orders.push(ord1, ord15)
         return orders;
     }
     protected exit(ohlcv: number[][], position: Position): Order[] { return }
