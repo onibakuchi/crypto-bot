@@ -21,7 +21,7 @@ const main = async () => {
         console.log('[Info]:EXIT(1)');
         process.exit(1)
     }
-    setTimeout(async () => await main(), INTERVAL * 1000);
+    // setTimeout(async () => await main(), INTERVAL * 1000);
 }
 
 main().catch(e => {
