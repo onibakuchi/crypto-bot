@@ -7,10 +7,10 @@
 runtime: nodejs12
 instance_class: B1
 entrypoint: dist/arbitrage/start.js
-# manual_scaling: 
+# manual_scaling:
 #   instances: 1
 
-basic_scaling:  
+basic_scaling:
   max_instances: 1
 
 # idle_timeout:  2m
@@ -19,4 +19,4 @@ basic_scaling:
 #   EXCHANGE: "FTX"
 
 includes:
- - secret.yaml
+  - secret.yaml
