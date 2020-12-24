@@ -40,8 +40,8 @@ app.get('/cron/start/bot', (req, res) => {
     res.send("Hello World!");
 });
 console.log('[Info]:App started...');
-const port = process.env.port || 3000;
-app.listen(port, () => console.log('🚀App listening on port', port));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log('🚀App listening on PORT', PORT));
 // main().catch(e => {
 //     console.log('e :>> ', e);
 //     process.exit(1);
