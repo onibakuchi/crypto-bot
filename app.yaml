@@ -5,18 +5,16 @@
 # https://cloud.google.com/appengine/docs/standard/nodejs/runtime?hl=ja#environment_variables
 
 runtime: nodejs12
-instance_class: B1
+instance_class: F1
 entrypoint: dist/arbitrage/start.js
+# instance_class: B1
+
 # manual_scaling:
 #   instances: 1
 
-basic_scaling:
-  max_instances: 1
-
+# basic_scaling:
+#   max_instances: 1
 # idle_timeout:  2m
-
-# env_variables:
-#   EXCHANGE: "FTX"
 
 includes:
   - secret.yaml

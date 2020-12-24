@@ -1,6 +1,7 @@
 cron:
-  - description: "every 3 minutes"
-    url: /cron/arb-record
+  - description: "arb chance report"
+    url: /cron/start/bot
+    schedule: "every 3 minutes"
     timezone: UTC
     retry_parameters:
       max_backoff_seconds: 90
