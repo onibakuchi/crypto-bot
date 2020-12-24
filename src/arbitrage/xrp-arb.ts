@@ -58,7 +58,7 @@ export const xrpArb = async (): Promise<ArbObjects> => {
     }
 }
 
-export const recordXRPArb = async (range, column) => {
+export const recordXRPArb = async (range: string, column: any[]) => {
     await record(xrpArb, range, column);
 }
 

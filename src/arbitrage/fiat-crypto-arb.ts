@@ -48,7 +48,7 @@ export const fiatCryptoArb = async (): Promise<ArbObjects> => {
     }
 }
 
-export const recordFiatArb = async (range,column) => {
+export const recordFiatArb = async (range: string,column: any[]) => {
     await record(fiatCryptoArb, range, column);
 }
 
