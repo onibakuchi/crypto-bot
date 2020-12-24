@@ -7,7 +7,7 @@
     "test": "npx ts-node -r dotenv/config src/index.ts",
     "arb:xrp": "npx ts-node src/arbitrage/xrp-arb.ts",
     "arb:fiat": "npx ts-node src/arbitrage/fiat-crypto-arb.ts",
-    "arb": "npx ts-node src/arbitrage/start.ts",
+    "arb": "node dist/arbitrage/start.js",
     "start": "exit 0"
   },
   "author": "",
