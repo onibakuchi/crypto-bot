@@ -1,0 +1,8 @@
+cron:
+- description: "every 3 minutes"
+  url: /cron/arb-record
+  timezone: UTC
+  retry_parameters:
+    max_backoff_seconds: 90
+    max_doublings: 1
+    job_retry_limit: 2
