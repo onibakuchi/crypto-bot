@@ -2,7 +2,7 @@ import { sheetAPI, append } from '../sheet/sheet';
 import CONFIG from '../config/config';
 import type { ArbObjects } from './arb';
 
-export const record = async (func: () => Promise<ArbObjects>, range: string, column) => {
+export const record = async (func: () => Promise<ArbObjects>, range: string, column: any[]) => {
     const appendRequest = {
         spreadsheetId: CONFIG.SPREAD_SHEET.SHEET_ID,
         range: '',
