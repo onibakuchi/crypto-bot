@@ -17,6 +17,21 @@ class BaseDatastore {
             breakEvenPrice: null,
         };
     }
+    calcPosition() {
+        console.log('[Info]: Updating position....');
+        const orders = this.contractedOrders.values();
+        for (const order of orders) {
+            if (this.position.symbol != order.symbol)
+                continue;
+            const prevAmount = this.position.amount;
+            this.position.amount += (order.side == this.position.side) ? order.amount : -order.amount;
+            this.position.avgOpenPrice = (this.position.avgOpenPrice * prevAmount + order.price * order.amount) / this.position.amount;
+            this.position.amountUSD = this.position.amount * this.position.avgOpenPrice;
+        }
+        console.log('[Info]: Position...\n', this.position);
+        // this.contractedOrders.clear();
+        console.log('[Info]: Done updating position....');
+    }
     getActiveOrders() { return this.activeOrders; }
     getContractedOrders() { return this.contractedOrders; }
     getExpiredOrders() {
@@ -36,19 +51,10 @@ class BaseDatastore {
     setOHLCV(ohlcv) {
         this.ohlcv = ohlcv;
     }
-    setPosition() {
+    setPosition(position) {
         console.log('[Info]: Updating position....');
-        const orders = this.contractedOrders.values();
-        for (const order of orders) {
-            if (this.position.symbol != order.symbol)
-                continue;
-            const prevAmount = this.position.amount;
-            this.position.amount += (order.side == this.position.side) ? order.amount : -order.amount;
-            this.position.avgOpenPrice = (this.position.avgOpenPrice * prevAmount + order.price * order.amount) / this.position.amount;
-            this.position.amountUSD = this.position.amount * this.position.avgOpenPrice;
-        }
-        console.log('[Info]: Position...\n', this.getPosition());
-        // this.contractedOrders.clear();
+        this.position = position;
+        console.log('[Info]: Position...\n', this.position);
         console.log('[Info]: Done updating position....');
     }
     setPreparedOrders(orders) {
@@ -73,6 +79,9 @@ class BaseDatastore {
         console.log('[Info]:Calling function updateOrderStatus...');
         const iterator = this.activeOrders.entries();
         for (const [key, order] of iterator) {
+            if (order['status'] == 'open') {
+                console.log('[Info]: Open Order<Order>', order);
+            }
             if (order['status'] == 'closed') {
                 this.activeOrders.delete(key);
                 this.contractedOrders.set(key, order);
@@ -82,11 +91,11 @@ class BaseDatastore {
                 this.activeOrders.delete(key);
                 console.log('[Info]: Canceled Order<Order>', order);
             }
-            if (order['status'] = 'pending') {
-                ;
+            if (order['status'] == 'pending') {
+                console.log('[Info]: Pending Order<Order>', order);
             }
         }
-        this.setPosition();
+        // this.calcPosition();
     }
     updatePreparedOrders() {
         const orders = this.preparedOrders.values();

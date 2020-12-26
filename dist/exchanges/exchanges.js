@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExchangeRepositoryFactory = exports.AbstractExchange = void 0;
 const ccxt_1 = __importDefault(require("ccxt"));
-const bot_interface_1 = require("../bot/bot-interface");
+const bot_interface_1 = require("../bot-interface");
 const config_1 = __importDefault(require("../config/config"));
 class AbstractExchange extends bot_interface_1.BaseComponent {
     constructor(mediator = null) {
@@ -36,7 +36,7 @@ class AbstractExchange extends bot_interface_1.BaseComponent {
             throw Error(`[ERROR]:CANNOT_FIND_${this.exchangeId.toUpperCase()}_APIKEYS`);
     }
     updateOrder(target, source) {
-        target.status = source.status ? source.status : 'pending';
+        target.status = source.status;
         source.id && (target.id = source.id);
         source.timestamp && (target.timestamp = source.timestamp);
     }
@@ -149,6 +149,7 @@ class AbstractExchange extends bot_interface_1.BaseComponent {
                     console.log('[ERROR]:Retry Failed');
             }
         }
+        console.log(`[Info]: Fetch order status.. Done...`);
         return orders;
     }
     async fetchTickers(symbols, params) {
@@ -174,12 +175,29 @@ class BitBank extends AbstractExchange {
         this.ONLY_PUBLIC = true;
         this.setCCXT();
     }
+    async fetchPosition() { return Promise.reject(); }
 }
 class FTX extends AbstractExchange {
     constructor(mediator = null) {
         super(mediator);
         this.exchangeId = 'ftx';
         this.setCCXT();
+    }
+    async fetchPosition(symbol, params = {}) {
+        const data = await this.CCXT.fetchPositions(params);
+        for (const d of data) {
+            if (d.future = symbol) {
+                const position = {
+                    symbol: d.future,
+                    side: d.side,
+                    amount: d.size,
+                    amountUSD: d.cost,
+                    avgOpenPrice: d.entryPrice,
+                    breakEvenPrice: 0,
+                };
+                return position;
+            }
+        }
     }
 }
 // class BitMEX extends AbstractExchange {
@@ -197,6 +215,7 @@ class CoinCheck extends AbstractExchange {
         this.exchangeId = 'coincheck';
         this.setCCXT();
     }
+    async fetchPosition() { return Promise.reject(); }
 }
 const ExchangeRepositories = {
     'bitbank': new BitBank(),

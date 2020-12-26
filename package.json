@@ -8,7 +8,7 @@
     "arb:xrp": "npx ts-node src/arbitrage/xrp-arb.ts",
     "arb:fiat": "npx ts-node src/arbitrage/fiat-crypto-arb.ts",
     "arb": "node dist/arbitrage/start.js",
-    "start": "npx ts-node dist/arbitrage/start.ts"
+    "start": "npx ts-node src/index.ts"
   },
   "author": "",
   "license": "ISC",

@@ -8,7 +8,7 @@ const xrp_arb_1 = require("./xrp-arb");
 const fiat_crypto_arb_1 = require("./fiat-crypto-arb");
 const config_1 = __importDefault(require("../config/config"));
 const TIMEOUT = Number(process.env.TIMEOUT) || 480 * 1000;
-const INTERVAL = Number(process.env.INTERVAL) || 120;
+const INTERVAL = 120000;
 const expiration = Date.now() + TIMEOUT;
 const column = ['BTC', 'XRP'];
 const xrpColumn = ['BTC', 'ETH'];
@@ -27,7 +27,7 @@ const main = async () => {
         console.log('[Info]:EXIT(1)');
         process.exit(1);
     }
-    // setTimeout(async () => await main(), INTERVAL * 1000);
+    // setTimeout(async () => await main(), INTERVAL);
 };
 app.get('/cron/start/bot', (req, res) => {
     console.log('req.headers :>> ', req.headers);
