@@ -27,17 +27,16 @@ export class DatastoreWithMongo extends BaseDatastore {
                     default:
                         console.log('[Warn]: INVALID_STATUS');
                 }
-                return;
             }
             if ('avgOpenPrice' in el) {
                 this.position = el;
             }
         });
     }
-    public saveToDb = async (count = 0) => {
+    public async saveToDb(count = 0) {
         try {
             const data = [...this.contractedOrders.values(), ...this.getExpiredOrders(), ...this.activeOrders.values()]
-            await this.db.bulkUpsert(this.COLLECTION_NAME, data);
+            return await this.db.bulkUpsert(this.COLLECTION_NAME, data);
         } catch (e) {
             console.log('[ERROR]:FAILED_DB_REQUEST', e);
             this.db.close();

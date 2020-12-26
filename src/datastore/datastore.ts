@@ -78,6 +78,9 @@ export abstract class BaseDatastore implements DatastoreInterface {
         console.log('[Info]:Calling function updateOrderStatus...');
         const iterator: IterableIterator<[string, Order]> = this.activeOrders.entries();
         for (const [key, order] of iterator) {
+            if (order['status'] == 'open') {
+                console.log('[Info]: Open Order<Order>', order);
+            }
             if (order['status'] == 'closed') {
                 this.activeOrders.delete(key);
                 this.contractedOrders.set(key, order);
@@ -87,7 +90,9 @@ export abstract class BaseDatastore implements DatastoreInterface {
                 this.activeOrders.delete(key);
                 console.log('[Info]: Canceled Order<Order>', order);
             }
-            if (order['status'] = 'pending') { ; }
+            if (order['status'] == 'pending') {
+                console.log('[Info]: Pending Order<Order>', order);
+            }
         }
         // this.calcPosition();
     }

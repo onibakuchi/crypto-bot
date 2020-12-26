@@ -4,7 +4,7 @@ import { recordFiatArb } from './fiat-crypto-arb';
 import CONFIG from '../config/config';
 
 const TIMEOUT = Number(process.env.TIMEOUT) || 480 * 1000
-const INTERVAL = Number(process.env.INTERVAL) || 120
+const INTERVAL = 120000
 
 const expiration = Date.now() + TIMEOUT;
 
@@ -25,7 +25,7 @@ const main = async () => {
         console.log('[Info]:EXIT(1)');
         process.exit(1)
     }
-    // setTimeout(async () => await main(), INTERVAL * 1000);
+    // setTimeout(async () => await main(), INTERVAL);
 }
 
 app.get('/cron/start/bot', (req, res) => {

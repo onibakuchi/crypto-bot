@@ -8,14 +8,6 @@ const timeout = (sec) => {
     })
 }
 
-const run = (func, sec) => {
-    func()
-    const promise = new Promise((resolve) => {
-        setTimeout(resolve, sec * 1000);
-    });
-    promise.then(() => run(func, sec))
-};
-
 const app = new App('ftx');
 app.setStrategy([HigeCatchStrategy]);
 app.setDatastore(DatastoreWithMongo);

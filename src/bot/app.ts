@@ -7,6 +7,7 @@ import type { DatastoreInterface, Order } from '../datastore/datastore-interface
 export class App implements Mediator {
     private readonly MODE: string = CONFIG.TRADE.MODE;
     private readonly symbol: string = CONFIG.TRADE.SYMBOL;
+    private readonly second: number = 300;
     private timeframe: string = CONFIG.TRADE.TIMEFRAME;
     private exchangeapi: AbstractExchange;
     private strategies: BaseStrategy[] = [];
@@ -38,13 +39,13 @@ export class App implements Mediator {
         console.log('[Info]: Done Excuting all strategies...');
     }
     private async setOHLCV() {
-        const ohlcv = await this.exchangeapi.fetchOHLCV(this.symbol, this.timeframe, Date.now() - 300 * 1000)
+        const ohlcv = await this.exchangeapi.fetchOHLCV(this.symbol, this.timeframe, Date.now() - this.second * 1000)
         this.datastore.setOHLCV(ohlcv);
         console.log('[Info] OHLCV :>> ', ohlcv);
     }
     private async updatePosition() {
         console.log('[Info]:Updating position...');
-        const position = await this.exchangeapi.fetchPosition();
+        const position = await this.exchangeapi.fetchPosition(this.symbol, {});
         this.datastore.setPosition(position);
         console.log('[Info]:Updating position.. Done...');
     }
@@ -101,21 +102,24 @@ export class App implements Mediator {
         ) throw Error('[ERROR]: UNDEFINED_EXCHANGE_API_OR_DARASTORE_OR_STRATEGY');
         // this.setActiveOrders();//FOR TEST
         await this.setOHLCV();
+        console.log('....getActiveOrders() initあと:>> ', ...this.datastore.getActiveOrders().values());
         await this.updateStatus();
+        console.log('....getActiveOrders() updatestatusあと:>> ', ...this.datastore.getActiveOrders().values());
         await this.updatePosition();
         this.execute()
         await this.order()
         await this.cancel()
+        console.log('...tgetActiveOrders()saveDb前 :>> ', ...this.datastore.getActiveOrders().values());
+        await this.saveToDb();
         const contractedOrders = [...this.getDatastore().getContractedOrders().values()];
         this.getDatastore().getContractedOrders().clear()
-        await this.saveToDb();
         return contractedOrders;
     }
     public async saveToDb() { await this.datastore.saveToDb() }
     public async start(): Promise<void> {
         await this.init();
-        this.timer = setInterval(() => this.main(), Number(CONFIG.INTERVAL));
-        // this.timer.refresh();
+        // await this.main();
+        this.timer = setInterval(async () => await this.main(), Number(CONFIG.INTERVAL));
     }
     public async stop(): Promise<void> {
         if (this.timer) {

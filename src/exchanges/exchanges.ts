@@ -11,7 +11,7 @@ export abstract class AbstractExchange extends BaseComponent {
     constructor(mediator: Mediator = null) {
         super(mediator);
     }
-    public abstract fetchPosition(symbol?, params?): Promise<any>;
+    public abstract fetchPosition(symbol: string, params?: {}): Promise<any>;
     protected setCCXT = (): void => {
         const keys = this.setKey(this.exchangeId);
         this.CCXT = new CCXT[this.exchangeId.toLowerCase()]({
@@ -32,7 +32,7 @@ export abstract class AbstractExchange extends BaseComponent {
         } else throw Error(`[ERROR]:CANNOT_FIND_${this.exchangeId.toUpperCase()}_APIKEYS`)
     }
     protected updateOrder(target: Order, source: CCXT.Order) {
-        target.status = source.status ? source.status : 'pending';
+        target.status = source.status;
         source.id && (target.id = source.id);
         source.timestamp && (target.timestamp = source.timestamp);
     }
@@ -134,6 +134,7 @@ export abstract class AbstractExchange extends BaseComponent {
                 } else console.log('[ERROR]:Retry Failed');
             }
         }
+        console.log(`[Info]: Fetch order status.. Done...`);
         return orders
     }
     public async fetchTickers(symbols: string[], params?: CCXT.Params): Promise<{ [symbol: string]: CCXT.Ticker }> {
@@ -168,8 +169,8 @@ class FTX extends AbstractExchange {
         super(mediator);
         this.setCCXT();
     }
-    public async fetchPosition(symbol = undefined, params = {}): Promise<any> {
-        const data = this.CCXT.fetchPositions(params);
+    public async fetchPosition(symbol, params = {}): Promise<any> {
+        const data = await this.CCXT.fetchPositions(params);
         for (const d of data) {
             if (d.future = symbol) {
                 const position: Position = {
@@ -218,11 +219,6 @@ export const ExchangeRepositoryFactory = {
     get: (name: string) => ExchangeRepositories[name]
 };
 
-(async () => {
-    const ftx = ExchangeRepositoryFactory.get('ftx');
-    const res = await ftx.fetchPosition();
-    console.log('res :>> ', res);
-})()
 // (async function () {
 //     const symbol = 'ETH-PERP'
 //     const timeframe = '1h'
