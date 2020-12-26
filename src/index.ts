@@ -1,5 +1,5 @@
 import { DatastoreWithMongo } from './datastore/datastore-mongo';
-import { App } from './bot/app';
+import { App } from './app';
 import { HigeCatchStrategy } from './strategy/strategy';
 
 const timeout = (sec) => {

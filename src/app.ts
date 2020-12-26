@@ -1,8 +1,8 @@
-import { AbstractExchange, ExchangeRepositoryFactory } from '../exchanges/exchanges';
-import { pushMessage } from '../notif/line';
-import CONFIG from '../config/config';
+import { AbstractExchange, ExchangeRepositoryFactory } from './exchanges/exchanges';
+import { pushMessage } from './notif/line';
+import CONFIG from './config/config';
 import type { Mediator, BaseStrategy } from './bot-interface';
-import type { DatastoreInterface, Order } from '../datastore/datastore-interface';
+import type { DatastoreInterface, Order } from './datastore/datastore-interface';
 
 export class App implements Mediator {
     private readonly MODE: string = CONFIG.TRADE.MODE;
@@ -102,14 +102,11 @@ export class App implements Mediator {
         ) throw Error('[ERROR]: UNDEFINED_EXCHANGE_API_OR_DARASTORE_OR_STRATEGY');
         // this.setActiveOrders();//FOR TEST
         await this.setOHLCV();
-        console.log('....getActiveOrders() initあと:>> ', ...this.datastore.getActiveOrders().values());
         await this.updateStatus();
-        console.log('....getActiveOrders() updatestatusあと:>> ', ...this.datastore.getActiveOrders().values());
         await this.updatePosition();
         this.execute()
         await this.order()
         await this.cancel()
-        console.log('...tgetActiveOrders()saveDb前 :>> ', ...this.datastore.getActiveOrders().values());
         await this.saveToDb();
         const contractedOrders = [...this.getDatastore().getContractedOrders().values()];
         this.getDatastore().getContractedOrders().clear()

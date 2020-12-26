@@ -1,6 +1,6 @@
 import CCXT from 'ccxt';
 import type { Order, Position } from '../datastore/datastore-interface';
-import { BaseComponent, Mediator } from '../bot/bot-interface';
+import { BaseComponent, Mediator } from '../bot-interface';
 import config from '../config/config';
 
 export abstract class AbstractExchange extends BaseComponent {

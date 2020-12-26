@@ -1,4 +1,4 @@
-import { BaseStrategy } from '../bot/bot-interface';
+import { BaseStrategy } from '../bot-interface';
 import type { Order, Position } from '../datastore/datastore-interface';
 
 export abstract class AbstractStrategy extends BaseStrategy {

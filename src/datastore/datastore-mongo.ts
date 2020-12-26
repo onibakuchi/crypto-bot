@@ -1,5 +1,4 @@
 import { MongoDatastore, MongoDatastoreInterface } from './base-mongo-db';
-import { Order, Position } from './datastore-interface';
 import { BaseDatastore } from './datastore';
 
 export class DatastoreWithMongo extends BaseDatastore {

@@ -1,5 +1,5 @@
-import { DatastoreInterface, Order } from "../datastore/datastore-interface";
-import { pushMessage } from '../notif/line';
+import { DatastoreInterface, Order } from "./datastore/datastore-interface";
+import { pushMessage } from './notif/line';
 
 export abstract class BaseComponent {
     protected mediator: Mediator;
