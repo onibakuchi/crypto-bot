@@ -1,5 +1,5 @@
 import CCXT from 'ccxt';
-import type { Order } from '../datastore/datastore-interface';
+import type { Order, Position } from '../datastore/datastore-interface';
 import { BaseComponent, Mediator } from '../bot/bot-interface';
 import config from '../config/config';
 
@@ -11,6 +11,7 @@ export abstract class AbstractExchange extends BaseComponent {
     constructor(mediator: Mediator = null) {
         super(mediator);
     }
+    public abstract fetchPosition(symbol?, params?): Promise<any>;
     protected setCCXT = (): void => {
         const keys = this.setKey(this.exchangeId);
         this.CCXT = new CCXT[this.exchangeId.toLowerCase()]({
@@ -158,6 +159,7 @@ class BitBank extends AbstractExchange {
         super(mediator);
         this.setCCXT();
     }
+    public async fetchPosition() { return Promise.reject() }
 }
 
 class FTX extends AbstractExchange {
@@ -165,6 +167,22 @@ class FTX extends AbstractExchange {
     constructor(mediator = null) {
         super(mediator);
         this.setCCXT();
+    }
+    public async fetchPosition(symbol = undefined, params = {}): Promise<any> {
+        const data = this.CCXT.fetchPositions(params);
+        for (const d of data) {
+            if (d.future = symbol) {
+                const position: Position = {
+                    symbol: d.future,
+                    side: d.side,
+                    amount: d.size,
+                    amountUSD: d.cost,
+                    avgOpenPrice: d.entryPrice,
+                    breakEvenPrice: 0,
+                };
+                return position;
+            }
+        }
     }
 }
 
@@ -183,6 +201,7 @@ class CoinCheck extends AbstractExchange {
         super(mediator);
         this.setCCXT();
     }
+    public async fetchPosition() { return Promise.reject(); }
 }
 
 const ExchangeRepositories: {
@@ -199,7 +218,11 @@ export const ExchangeRepositoryFactory = {
     get: (name: string) => ExchangeRepositories[name]
 };
 
-
+(async () => {
+    const ftx = ExchangeRepositoryFactory.get('ftx');
+    const res = await ftx.fetchPosition();
+    console.log('res :>> ', res);
+})()
 // (async function () {
 //     const symbol = 'ETH-PERP'
 //     const timeframe = '1h'

@@ -42,10 +42,16 @@ export class App implements Mediator {
         this.datastore.setOHLCV(ohlcv);
         console.log('[Info] OHLCV :>> ', ohlcv);
     }
+    private async updatePosition() {
+        console.log('[Info]:Updating position...');
+        const position = await this.exchangeapi.fetchPosition();
+        this.datastore.setPosition(position);
+        console.log('[Info]:Updating position.. Done...');
+    }
     private async updateStatus() {
         console.log('[Info]:Process: Updating order status...');
         const values = this.datastore.getActiveOrders().values()
-        await this.exchangeapi.fetchOrders(values)
+        await this.exchangeapi.fetchOrders(values);
         this.datastore.updateOrderStatus();
         console.log('[Info]:Process: Done updating order status...');
     }
@@ -96,6 +102,7 @@ export class App implements Mediator {
         // this.setActiveOrders();//FOR TEST
         await this.setOHLCV();
         await this.updateStatus();
+        await this.updatePosition();
         this.execute()
         await this.order()
         await this.cancel()

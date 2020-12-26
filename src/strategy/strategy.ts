@@ -80,7 +80,8 @@ export class HigeCatchStrategy extends AbstractStrategy {
     }
     protected exit(ohlcv: number[][], position: Position): Order[] { return }
     protected hookWhenHavePosi(ohlcv: number[][], position: Position): Order[] {
-        const orders = this.limitOrder('settlement', 'sell', position.amount, position.avgOpenPrice + 300, 20 * 60)
+        const params = {};
+        const orders = this.limitOrder('settlement', 'sell', position.amount, position.avgOpenPrice + 300, 20 * 60,params)
         return [orders];
     }
     protected setAmounts() { }

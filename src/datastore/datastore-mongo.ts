@@ -1,5 +1,5 @@
 import { MongoDatastore, MongoDatastoreInterface } from './base-mongo-db';
-import { Order } from './datastore-interface';
+import { Order, Position } from './datastore-interface';
 import { BaseDatastore } from './datastore';
 
 export class DatastoreWithMongo extends BaseDatastore {
@@ -11,20 +11,26 @@ export class DatastoreWithMongo extends BaseDatastore {
     }
     public async init(): Promise<void> {
         await this.db.connect();
-        const data = (await this.db.findDocuments(this.COLLECTION_NAME, {})) as Order[]
-        data.forEach(order => {
-            if (('orderName' in order) && ('id' in order)) {
-                switch (order['orderName']) {
+        const data = (await this.db.findDocuments(this.COLLECTION_NAME, {})) as any[];
+        data.forEach(el => {
+            if ('orderName' in el) {
+                switch (el['status']) {
                     case 'open':
                     case 'pending':
-                        this.activeOrders.set(order['orderName'], order);
+                        this.activeOrders.set(el['orderName'], el);
+                        break;
+                    case 'canceled':
                         break;
                     case 'closed':
-                        this.contractedOrders.set(order['orderName'], order);
+                        this.contractedOrders.set(el['orderName'], el);
                         break;
                     default:
                         console.log('[Warn]: INVALID_STATUS');
                 }
+                return;
+            }
+            if ('avgOpenPrice' in el) {
+                this.position = el;
             }
         });
     }

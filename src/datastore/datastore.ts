@@ -18,6 +18,20 @@ export abstract class BaseDatastore implements DatastoreInterface {
     public abstract init(): Promise<void>;
     public abstract saveToDb();
 
+    protected calcPosition(): void {
+        console.log('[Info]: Updating position....');
+        const orders = this.contractedOrders.values();
+        for (const order of orders) {
+            if (this.position.symbol != order.symbol) continue;
+            const prevAmount = this.position.amount;
+            this.position.amount += (order.side == this.position.side) ? order.amount : -order.amount;
+            this.position.avgOpenPrice = (this.position.avgOpenPrice * prevAmount + order.price * order.amount) / this.position.amount;
+            this.position.amountUSD = this.position.amount * this.position.avgOpenPrice;
+        }
+        console.log('[Info]: Position...\n', this.position);
+        // this.contractedOrders.clear();
+        console.log('[Info]: Done updating position....');
+    }
     public getActiveOrders() { return this.activeOrders }
     public getContractedOrders() { return this.contractedOrders }
     public getExpiredOrders(): Order[] {
@@ -37,18 +51,10 @@ export abstract class BaseDatastore implements DatastoreInterface {
     public setOHLCV(ohlcv: number[][]) {
         this.ohlcv = ohlcv;
     }
-    public setPosition(): void {
+    public setPosition(position: Position): void {
         console.log('[Info]: Updating position....');
-        const orders = this.contractedOrders.values();
-        for (const order of orders) {
-            if (this.position.symbol != order.symbol) continue;
-            const prevAmount = this.position.amount;
-            this.position.amount += (order.side == this.position.side) ? order.amount : -order.amount;
-            this.position.avgOpenPrice = (this.position.avgOpenPrice * prevAmount + order.price * order.amount) / this.position.amount;
-            this.position.amountUSD = this.position.amount * this.position.avgOpenPrice;
-        }
-        console.log('[Info]: Position...\n', this.getPosition());
-        // this.contractedOrders.clear();
+        this.position = position;
+        console.log('[Info]: Position...\n', this.position);
         console.log('[Info]: Done updating position....');
     }
     public setPreparedOrders(orders: Order[]): void {
@@ -83,7 +89,7 @@ export abstract class BaseDatastore implements DatastoreInterface {
             }
             if (order['status'] = 'pending') { ; }
         }
-        this.setPosition();
+        // this.calcPosition();
     }
     public updatePreparedOrders(): void {
         const orders = this.preparedOrders.values()
