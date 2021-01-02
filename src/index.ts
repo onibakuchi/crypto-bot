@@ -11,6 +11,11 @@ bot.setDatastore(DatastoreWithMongo);
 // bot.start();
 
 const app = express();
+
+app.get('/', (req, res) => {
+    res.status(200).send('Hello, world!').end();
+});
+
 app.get('/cron/start/bot', (req, res) => {
     console.log('req.headers :>> ', req.headers);
     console.log('req.ip :>> ', req.ip);
@@ -18,9 +23,8 @@ app.get('/cron/start/bot', (req, res) => {
     if (req.headers['X-Appengine-Cron']) {
         console.log('This reqest is from GAE');
         setImmediate(async () => await bot.start());
-        res.status(200).end();
     }
-    res.send("Hello World!");
+    res.status(200).send('Hello world!').end();
 });
 
 app.listen(PORT, () => console.log('🚀App listening on PORT', PORT));
