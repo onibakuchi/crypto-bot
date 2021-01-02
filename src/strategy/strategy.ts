@@ -70,19 +70,25 @@ export class HigeCatchStrategy extends AbstractStrategy {
     protected algorithym(ohlcv: number[][], position: Position): Order[] {
         //  Non Reduce Only
         const orders = [];
-        const ord1 = this.limitOrder('hige3.4%', 'buy', 0.001, ohlcv[ohlcv.length - 1 - 4][4] * 0.966, 7 * 60, { postOnly: true })
-        const ord2 = this.limitOrder('hige3.8%', 'buy', 0.004, ohlcv[ohlcv.length - 1 - 4][4] * 0.942, 7 * 60, { postOnly: true })
-        // const ord15 = this.limitOrder({ name: 'hige4.4%', side: 'buy', amount: 0.003, price: ohlcv[ohlcv.length - 1 - 4][4] * 0.956, duration: 12 * 60 })
+        const params = { postOnly: true };
+        const ord1 = this.limitOrder('hige3.4%', 'buy', 0.001, ohlcv[ohlcv.length - 1 - 4][4] * 0.966, 7 * 60, params)
+        const ord2 = this.limitOrder('hige3.8%', 'buy', 0.004, ohlcv[ohlcv.length - 1 - 4][4] * 0.942, 7 * 60, params)
+        // this.downStatus = {
+        //     timestamp: Date.now(),
+        //     down: (ohlcv[ohlcv.length - 6][2] - ohlcv[ohlcv.length - 1][2]) / ohlcv[ohlcv.length - 4][3] > 0.2,
+        //     isExpired: (sec: number) => Date.now() + sec * 1000 > this.downStatus.timestamp
+        // };
+        // const ord45 = this.limitOrder({ name: 'hige4.4%', side: 'buy', amount: 0.003, price: ohlcv[ohlcv.length - 1 - 4][4] * 0.956, duration: 12 * 60 })
         // const ord3 = this.limitOrder('hige6.3%', 'buy', 0.005, ohlcv[ohlcv.length - 1 - 4][4] * 0.937, 15 * 60)
-
         orders.push(ord1, ord2)
         return orders;
     }
     protected exit(ohlcv: number[][], position: Position): Order[] { return }
     protected hookWhenHavePosi(ohlcv: number[][], position: Position): Order[] {
-        const params = {};
-        const orders = this.limitOrder('settlement', 'sell', position.amount, position.avgOpenPrice + 300, 20 * 60, { postOnly: true, reduceOnly: true })
+        const params = { postOnly: true, reduceOnly: true };
+        const orders = this.limitOrder('settlement', 'sell', position.amount, position.avgOpenPrice + 400, 20 * 60, params);
         return [orders];
+
     }
     protected setAmounts() { }
     protected setPrices() { }
