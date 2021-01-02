@@ -6,7 +6,6 @@
 
 runtime: nodejs12
 instance_class: F1
-entrypoint: dist/arbitrage/start.js
 # instance_class: B1
 
 # manual_scaling:
