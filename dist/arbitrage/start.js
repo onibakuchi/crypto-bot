@@ -1,37 +1,37 @@
-import express from 'express';
-import { recordXRPArb } from './xrp-arb';
-import { recordFiatArb } from './fiat-crypto-arb';
-import CONFIG from '../config/config';
-
-const TIMEOUT = Number(process.env.TIMEOUT) || 480 * 1000
-const INTERVAL = 120000
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const xrp_arb_1 = require("./xrp-arb");
+const fiat_crypto_arb_1 = require("./fiat-crypto-arb");
+const config_1 = __importDefault(require("../config/config"));
+const TIMEOUT = Number(process.env.TIMEOUT) || 480 * 1000;
+const INTERVAL = 120000;
 const expiration = Date.now() + TIMEOUT;
-
 const column = ['BTC', 'XRP'];
 const xrpColumn = ['BTC', 'ETH'];
-
-const app = express();
-
+const app = express_1.default();
 const main = async () => {
     try {
-        if (expiration * 1000 < Date.now()) process.exit(0);
+        if (expiration * 1000 < Date.now())
+            process.exit(0);
         console.log('[Info]:Processing...');
-        await recordFiatArb(CONFIG.SPREAD_SHEET.FIAT_ARB_RANGE, column);
-        await recordXRPArb(CONFIG.SPREAD_SHEET.XRP_ARB_RANGE, xrpColumn);
+        await fiat_crypto_arb_1.recordFiatArb(config_1.default.SPREAD_SHEET.FIAT_ARB_RANGE, column);
+        await xrp_arb_1.recordXRPArb(config_1.default.SPREAD_SHEET.XRP_ARB_RANGE, xrpColumn);
         console.log('[Info]:Await...');
-    } catch (e) {
+    }
+    catch (e) {
         console.log('[ERROR] :>> ', e);
         console.log('[Info]:EXIT(1)');
-        process.exit(1)
+        process.exit(1);
     }
     // setTimeout(async () => await main(), INTERVAL);
-}
-
+};
 app.get('/cron/start/bot', (req, res) => {
     console.log('req.headers :>> ', req.headers);
     console.log('req.ip :>> ', req.ip);
-
     if (req.headers['X-Appengine-Cron']) {
         console.log('This reqest is from GAE');
         setImmediate(async () => await main());
@@ -39,12 +39,9 @@ app.get('/cron/start/bot', (req, res) => {
     }
     res.send("Hello World!");
 });
-
 console.log('[Info]:App started...');
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log('🚀App listening on PORT', PORT));
-
-
 // main().catch(e => {
 //     console.log('e :>> ', e);
 //     process.exit(1);

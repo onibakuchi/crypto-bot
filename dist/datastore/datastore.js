@@ -1,28 +1,28 @@
-import { DatastoreInterface, DbDatastore, Order, Position, } from './datastore-interface';
-import { pushMessage } from '../notif/line';
-
-export abstract class BaseDatastore implements DatastoreInterface {
-    db: DbDatastore = null;
-    ohlcv: number[][];
-    contractedOrders: Map<string, Order> = new Map();
-    preparedOrders: Map<string, Order> = new Map();
-    activeOrders: Map<string, Order> = new Map();
-    position: Position = {
-        symbol: '',
-        side: '',
-        amount: 0,
-        amountUSD: 0,
-        avgOpenPrice: null,
-        breakEvenPrice: null,
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BaseDatastore = void 0;
+const line_1 = require("../notif/line");
+class BaseDatastore {
+    constructor() {
+        this.db = null;
+        this.contractedOrders = new Map();
+        this.preparedOrders = new Map();
+        this.activeOrders = new Map();
+        this.position = {
+            symbol: '',
+            side: '',
+            amount: 0,
+            amountUSD: 0,
+            avgOpenPrice: null,
+            breakEvenPrice: null,
+        };
     }
-    public abstract init(): Promise<void>;
-    public abstract saveToDb();
-
-    protected calcPosition(): void {
+    calcPosition() {
         console.log('[Info]: Updating position....');
         const orders = this.contractedOrders.values();
         for (const order of orders) {
-            if (this.position.symbol != order.symbol) continue;
+            if (this.position.symbol != order.symbol)
+                continue;
             const prevAmount = this.position.amount;
             this.position.amount += (order.side == this.position.side) ? order.amount : -order.amount;
             this.position.avgOpenPrice = (this.position.avgOpenPrice * prevAmount + order.price * order.amount) / this.position.amount;
@@ -32,9 +32,9 @@ export abstract class BaseDatastore implements DatastoreInterface {
         // this.contractedOrders.clear();
         console.log('[Info]: Done updating position....');
     }
-    public getActiveOrders() { return this.activeOrders }
-    public getContractedOrders() { return this.contractedOrders }
-    public getExpiredOrders(): Order[] {
+    getActiveOrders() { return this.activeOrders; }
+    getContractedOrders() { return this.contractedOrders; }
+    getExpiredOrders() {
         const expiredOrders = [];
         for (const value of this.activeOrders.values()) {
             console.log(` ${value}`);
@@ -45,19 +45,19 @@ export abstract class BaseDatastore implements DatastoreInterface {
         console.log('[Info]: Expired orders :>>', expiredOrders);
         return expiredOrders;
     }
-    public getOHCV(): number[][] { return this.ohlcv }
-    public getPosition() { return this.position; }
-    public getPreparedOrders(): Map<string, Order> { return this.preparedOrders }
-    public setOHLCV(ohlcv: number[][]) {
+    getOHCV() { return this.ohlcv; }
+    getPosition() { return this.position; }
+    getPreparedOrders() { return this.preparedOrders; }
+    setOHLCV(ohlcv) {
         this.ohlcv = ohlcv;
     }
-    public setPosition(position: Position): void {
+    setPosition(position) {
         console.log('[Info]: Updating position....');
         this.position = position;
         console.log('[Info]: Position...\n', this.position);
         console.log('[Info]: Done updating position....');
     }
-    public setPreparedOrders(orders: Order[]): void {
+    setPreparedOrders(orders) {
         for (const order of orders) {
             if (order) {
                 const key = order['orderName'];
@@ -65,18 +65,19 @@ export abstract class BaseDatastore implements DatastoreInterface {
                     console.log(`[Info]:skipped... Order<${key}> is already open...`);
                     continue;
                 }
-                this.preparedOrders.set(key, order)
-            } else {
+                this.preparedOrders.set(key, order);
+            }
+            else {
                 console.log('[ERROR]: Incompatible to Order Interface\n <Order> :>>', order);
             }
         }
     }
-    protected async pushMessage(message: string): Promise<void> {
-        await pushMessage(message);
+    async pushMessage(message) {
+        await line_1.pushMessage(message);
     }
-    public updateOrderStatus(): void {
+    updateOrderStatus() {
         console.log('[Info]:Calling function updateOrderStatus...');
-        const iterator: IterableIterator<[string, Order]> = this.activeOrders.entries();
+        const iterator = this.activeOrders.entries();
         for (const [key, order] of iterator) {
             if (order['status'] == 'open') {
                 console.log('[Info]: Open Order<Order>', order);
@@ -96,8 +97,8 @@ export abstract class BaseDatastore implements DatastoreInterface {
         }
         // this.calcPosition();
     }
-    public updatePreparedOrders(): void {
-        const orders = this.preparedOrders.values()
+    updatePreparedOrders() {
+        const orders = this.preparedOrders.values();
         for (const order of orders) {
             const key = order['orderName'];
             if (order.status == 'open') {
@@ -116,3 +117,4 @@ export abstract class BaseDatastore implements DatastoreInterface {
         }
     }
 }
+exports.BaseDatastore = BaseDatastore;

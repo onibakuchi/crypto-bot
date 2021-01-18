@@ -34,6 +34,7 @@ export interface DatastoreInterface {
     init(): Promise<void>
     saveToDb(): Promise<void>;
     setOHLCV(ohlcv: number[][]): void;
+    setPosition(position: Position): void;
     setPreparedOrders(orders: Order[]): void;
     updateOrderStatus(): void;
     updatePreparedOrders(): void;

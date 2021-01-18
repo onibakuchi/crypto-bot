@@ -1,11 +1,11 @@
-import { google } from 'googleapis';
+import { google, sheets_v4 } from 'googleapis';
 import CONFIG from '../config/config';
 
 // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/request#updatecellsrequest
 // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/get
 // https://qiita.com/vicugna-pacos/items/f7bb0d97bbaa1371edc8
 
-async function sheetAPI(callback, data) {
+export async function sheetAPI(callback, data) {
     try {
         const { client_id, client_secret, redirect_uris } = CONFIG.CREDENTIALS.installed;
         if (client_id == undefined || client_id == undefined) Error('[ERROR]: CANNOT_FIND_CREDENTIALS')
@@ -23,7 +23,7 @@ async function sheetAPI(callback, data) {
  * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
  * @param {string[]} values  The data to be written. Each item in the inner array corresponds with one cell.
  */
-async function append(auth, request) {
+export async function append(auth, request) {
     const sheets = google.sheets({ version: 'v4', auth });
     try {
         const response = (await sheets.spreadsheets.values.append(request)).data;
@@ -33,7 +33,7 @@ async function append(auth, request) {
     }
 }
 
-async function get(auth, request) {
+export async function get(auth, request) {
     const sheets = google.sheets({ version: 'v4', auth });
     try {
         return (await sheets.spreadsheets.values.get(request)).data;
@@ -42,7 +42,7 @@ async function get(auth, request) {
     }
 }
 
-async function batchUpdate(auth, request) {
+export async function batchUpdate(auth: any, request: sheets_v4.Params$Resource$Spreadsheets$Values$Batchupdate) {
     const sheets = google.sheets({ version: 'v4', auth });
     try {
         const response = (await sheets.spreadsheets.values.batchUpdate(request)).data;
@@ -51,6 +51,6 @@ async function batchUpdate(auth, request) {
         console.error(err);
     }
 }
-export ={ sheetAPI, append, batchUpdate, get }
+
 
 

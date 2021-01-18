@@ -1,50 +1,45 @@
-import { BaseStrategy } from '../bot-interface';
-import type { Order, Position } from '../datastore/datastore-interface';
-
-export abstract class AbstractStrategy extends BaseStrategy {
-    protected MAX_ACTIVE_ORDERS: number;
-    protected MAX_LEVERAGE: number;
-    protected MODE: Boolean;
-    protected PYRAMIDING: number;
-    protected SYMBOL: string;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.HigeCatchStrategy = exports.AbstractStrategy = void 0;
+const bot_interface_1 = require("../bot-interface");
+class AbstractStrategy extends bot_interface_1.BaseStrategy {
     constructor(mediator = null) {
         super(mediator);
     }
-    public init(config: { MODE: any; SYMBOL: any; MAX_ACTIVE_ORDERS: any; MAX_LEVERAGE: any; PYRAMIDING: any; TIMEFRAME?: string; }): void {
+    init(config) {
         try {
             this.MAX_ACTIVE_ORDERS = Number(config.MAX_ACTIVE_ORDERS);
             this.MAX_LEVERAGE = Number(config.MAX_LEVERAGE);
             this.MODE = config.MODE.toLowerCase() == 'production';
             this.PYRAMIDING = Number(config.PYRAMIDING);
             this.SYMBOL = config.SYMBOL;
-        } catch (e) {
+        }
+        catch (e) {
             console.log('e :>> ', e);
             process.exit(1);
         }
     }
-    public strategy(): Order[] {
-        const newOrders: Order[] = [];
+    strategy() {
+        const newOrders = [];
         const datastore = this.mediator.getDatastore();
-        const activeOrdMap = datastore.getActiveOrders()
+        const activeOrdMap = datastore.getActiveOrders();
         const ohlcv = datastore.getOHCV();
         const position = datastore.getPosition();
-
         if (position.amountUSD > 0) {
             newOrders.push(...this.hookWhenHavePosi(ohlcv, position));
             if (activeOrdMap.size >= 3) {
                 console.log('exitOrders :>> ', newOrders);
-                return newOrders
+                return newOrders;
             }
         }
         // すでに約定していてポジションを持っている時かつPyraminging 数>1のとき
         const result = this.MODE ? this.algorithym(ohlcv, position) : this.testAlgorithym(ohlcv, position);
         newOrders.push(...result);
-
         console.log('newOrders :>> ', newOrders);
-        return newOrders
+        return newOrders;
     }
-    protected limitOrder(name, side, amount, price, duration = 10 * 60, params = {}) {
-        const template: Order = {
+    limitOrder(name, side, amount, price, duration = 10 * 60, params = {}) {
+        const template = {
             orderName: name,
             id: '',
             symbol: this.SYMBOL,
@@ -56,23 +51,19 @@ export abstract class AbstractStrategy extends BaseStrategy {
             price: price,
             params: params,
             expiration: Date.now() + duration * 1000,
-        }
+        };
         const ord = Object.assign({}, template);
         return ord;
     }
-    protected abstract algorithym(ohlcv: number[][], potision: Position, params?): Order[]
-    protected abstract exit(ohlcv: number[][], position: Position): Order[]
-    protected abstract hookWhenHavePosi(ohlcv: number[][], position: Position): Order[]
-    protected abstract testAlgorithym(ohlcv: number[][], position: Position): Order[]
 }
-
-export class HigeCatchStrategy extends AbstractStrategy {
-    protected algorithym(ohlcv: number[][], position: Position): Order[] {
+exports.AbstractStrategy = AbstractStrategy;
+class HigeCatchStrategy extends AbstractStrategy {
+    algorithym(ohlcv, position) {
         //  Non Reduce Only
         const orders = [];
         const params = { postOnly: true };
-        const ord1 = this.limitOrder('hige3.4%', 'buy', 0.001, ohlcv[ohlcv.length - 1 - 4][4] * 0.966, 7 * 60, params)
-        const ord2 = this.limitOrder('hige3.8%', 'buy', 0.004, ohlcv[ohlcv.length - 1 - 4][4] * 0.942, 7 * 60, params)
+        const ord1 = this.limitOrder('hige3.4%', 'buy', 0.001, ohlcv[ohlcv.length - 1 - 4][4] * 0.966, 7 * 60, params);
+        const ord2 = this.limitOrder('hige3.8%', 'buy', 0.004, ohlcv[ohlcv.length - 1 - 4][4] * 0.942, 7 * 60, params);
         // this.downStatus = {
         //     timestamp: Date.now(),
         //     down: (ohlcv[ohlcv.length - 6][2] - ohlcv[ohlcv.length - 1][2]) / ohlcv[ohlcv.length - 4][3] > 0.2,
@@ -80,21 +71,20 @@ export class HigeCatchStrategy extends AbstractStrategy {
         // };
         // const ord45 = this.limitOrder({ name: 'hige4.4%', side: 'buy', amount: 0.003, price: ohlcv[ohlcv.length - 1 - 4][4] * 0.956, duration: 12 * 60 })
         // const ord3 = this.limitOrder('hige6.3%', 'buy', 0.005, ohlcv[ohlcv.length - 1 - 4][4] * 0.937, 15 * 60)
-        orders.push(ord1, ord2)
+        orders.push(ord1, ord2);
         return orders;
     }
-    protected exit(ohlcv: number[][], position: Position): Order[] { return }
-    protected hookWhenHavePosi(ohlcv: number[][], position: Position): Order[] {
+    exit(ohlcv, position) { return; }
+    hookWhenHavePosi(ohlcv, position) {
         const params = { postOnly: true, reduceOnly: true };
         const orders = this.limitOrder('settlement', 'sell', position.amount, position.avgOpenPrice + 400, 20 * 60, params);
         return [orders];
-
     }
-    protected setAmounts() { }
-    protected setPrices() { }
-    protected testAlgorithym(ohlcv: number[][], position: Position): Order[] {
-        const order: Order = this.limitOrder('testOrder1', 'buy', 0.001, Math.random() * 30 + 430, 10 * 60)
-        return [order]
+    setAmounts() { }
+    setPrices() { }
+    testAlgorithym(ohlcv, position) {
+        const order = this.limitOrder('testOrder1', 'buy', 0.001, Math.random() * 30 + 430, 10 * 60);
+        return [order];
     }
-
 }
+exports.HigeCatchStrategy = HigeCatchStrategy;

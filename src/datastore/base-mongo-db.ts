@@ -9,12 +9,12 @@ const makeOperations = (option: 'update' | 'delete', orders: MinimalOrder[]) => 
   switch (option) {
     case 'update':
       for (const order of orders) {
-        op.push({ updateOne: { "filter": { "id": order.id }, "update": { $set: order }, "upsert": true } });
+        op.push({ updateOne: { "filter": { "orderName": order.orderName }, "update": { $set: order }, "upsert": true } });
       }
       break;
     case 'delete':
       for (const order of orders) {
-        op.push({ deleteOne: { "filter": { "id": order.id } } });
+        op.push({ deleteOne: { "filter": { "orderName": order.orderName } } });
       }
       break;
     default:
@@ -24,11 +24,11 @@ const makeOperations = (option: 'update' | 'delete', orders: MinimalOrder[]) => 
 }
 
 export interface MongoDatastoreInterface extends DbDatastore {
-  addConnection(name: string): void
+  addConnection(name: string): void;
   bulkDelete(name: string, Orders: MinimalOrder[]): Promise<void>;
   bulkUpsert(name: string, Orders: MinimalOrder[]): Promise<void>;
-  close(): Promise<void>
-  connect(): Promise<void>
+  close(): Promise<void>;
+  connect(): Promise<void>;
   findDocuments(name: string, query?: FilterQuery<any>): Promise<MinimalOrder[]>
 }
 export type CollectionRepository = {
@@ -58,7 +58,8 @@ export class MongoDatastore implements MongoDatastoreInterface {
       console.log('result :>> ', result);
     } catch (e) {
       console.log('e :>> ', e);
-      await this.close()
+      await this.close();
+      await this.client.connect();
     }
   }
   public async bulkUpsert(name: string, orders: MinimalOrder[]) {
@@ -66,10 +67,10 @@ export class MongoDatastore implements MongoDatastoreInterface {
     try {
       const result = (await this.collections[name].bulkWrite(makeOperations('update', orders))).result
       console.log('result :>> ', result);
-      await this.close()
     } catch (e) {
       console.log('e :>> ', e);
-      await this.close()
+      await this.close();
+      await this.client.connect();
     }
   }
   public async close(): Promise<void> { await this.client.close() }
@@ -78,6 +79,7 @@ export class MongoDatastore implements MongoDatastoreInterface {
       await this.client.connect();
       this.mongodb = this.client.db(CONFIG.DB.DB_NAME);
       this.collections.orders = this.mongodb.collection(CONFIG.DB.COLLECTION_NAME);
+      await this.collections.orders.createIndex({ orderName: 1 }, { unique: true })
       console.log(`[Info]:DB_CONNECT \nDB_NAME:${CONFIG.DB.DB_NAME}\nCOLLECTION_NAME:${CONFIG.DB.COLLECTION_NAME}`);
     } catch (e) {
       console.log('e :>> ', e);
@@ -92,7 +94,8 @@ export class MongoDatastore implements MongoDatastoreInterface {
       return result
     } catch (e) {
       console.log('e :>> ', e);
-      await this.close()
+      await this.close();
+      await this.client.connect();
     }
   }
   public async test() {

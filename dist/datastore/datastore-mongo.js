@@ -1,16 +1,17 @@
-import { MongoDatastore, MongoDatastoreInterface } from './base-mongo-db';
-import { BaseDatastore } from './datastore';
-
-export class DatastoreWithMongo extends BaseDatastore {
-    public readonly db: MongoDatastoreInterface;
-    protected readonly COLLECTION_NAME: string = 'orders';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DatastoreWithMongo = void 0;
+const base_mongo_db_1 = require("./base-mongo-db");
+const datastore_1 = require("./datastore");
+class DatastoreWithMongo extends datastore_1.BaseDatastore {
     constructor() {
         super();
-        this.db = new MongoDatastore();
+        this.COLLECTION_NAME = 'orders';
+        this.db = new base_mongo_db_1.MongoDatastore();
     }
-    public async init(): Promise<void> {
+    async init() {
         await this.db.connect();
-        const data = (await this.db.findDocuments(this.COLLECTION_NAME, {})) as any[];
+        const data = (await this.db.findDocuments(this.COLLECTION_NAME, {}));
         data.forEach(el => {
             if ('orderName' in el) {
                 switch (el['status']) {
@@ -32,11 +33,12 @@ export class DatastoreWithMongo extends BaseDatastore {
             }
         });
     }
-    public async saveToDb(count = 0) {
+    async saveToDb(count = 0) {
         try {
-            const data = [...this.contractedOrders.values(), ...this.getExpiredOrders(), ...this.activeOrders.values()]
+            const data = [...this.contractedOrders.values(), ...this.getExpiredOrders(), ...this.activeOrders.values()];
             return await this.db.bulkUpsert(this.COLLECTION_NAME, data);
-        } catch (e) {
+        }
+        catch (e) {
             console.log('[ERROR]:FAILED_DB_REQUEST', e);
             this.db.close();
             this.pushMessage(e);
@@ -48,3 +50,4 @@ export class DatastoreWithMongo extends BaseDatastore {
         }
     }
 }
+exports.DatastoreWithMongo = DatastoreWithMongo;

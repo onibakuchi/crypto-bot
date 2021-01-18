@@ -1,16 +1,18 @@
-import { AbstractExchange, ExchangeRepositoryFactory } from '../exchanges/exchanges';
-import { pushMessage } from '../notif/line';
-import CONFIG from '../config/config';
+import { AbstractExchange, ExchangeRepositoryFactory } from './exchanges/exchanges';
+import { pushMessage } from './notif/line';
+import CONFIG from './config/config';
 import type { Mediator, BaseStrategy } from './bot-interface';
-import type { DatastoreInterface, Order } from '../datastore/datastore-interface';
+import type { DatastoreInterface, Order } from './datastore/datastore-interface';
 
-export class Bot implements Mediator {
+export class App implements Mediator {
     private readonly MODE: string = CONFIG.TRADE.MODE;
     private readonly symbol: string = CONFIG.TRADE.SYMBOL;
+    private readonly second: number = 300;
     private timeframe: string = CONFIG.TRADE.TIMEFRAME;
     private exchangeapi: AbstractExchange;
     private strategies: BaseStrategy[] = [];
     private datastore: DatastoreInterface;
+    private timer: NodeJS.Timeout;
 
     constructor(exchangeId: string, _strategies?: (new () => BaseStrategy)[] | undefined) {
         this.exchangeapi = ExchangeRepositoryFactory.get(exchangeId);
@@ -18,7 +20,7 @@ export class Bot implements Mediator {
         this.setStrategy(_strategies);
         console.log('[Info]: Launched...[mode]=', this.MODE);
     }
-    private exeStrategy() {
+    private execute() {
         console.log(`[Info]: Excute strategies....`);
         if (this.datastore.getOHCV()) {
             for (const strategy of this.strategies) {
@@ -37,14 +39,20 @@ export class Bot implements Mediator {
         console.log('[Info]: Done Excuting all strategies...');
     }
     private async setOHLCV() {
-        const ohlcv = await this.exchangeapi.fetchOHLCV(this.symbol, this.timeframe, Date.now() - 3600 * 1000)
+        const ohlcv = await this.exchangeapi.fetchOHLCV(this.symbol, this.timeframe, Date.now() - this.second * 1000)
         this.datastore.setOHLCV(ohlcv);
         console.log('[Info] OHLCV :>> ', ohlcv);
+    }
+    private async updatePosition() {
+        console.log('[Info]:Updating position...');
+        const position = await this.exchangeapi.fetchPosition(this.symbol, {});
+        this.datastore.setPosition(position);
+        console.log('[Info]:Updating position.. Done...');
     }
     private async updateStatus() {
         console.log('[Info]:Process: Updating order status...');
         const values = this.datastore.getActiveOrders().values()
-        await this.exchangeapi.fetchOrders(values)
+        await this.exchangeapi.fetchOrders(values);
         this.datastore.updateOrderStatus();
         console.log('[Info]:Process: Done updating order status...');
     }
@@ -81,7 +89,10 @@ export class Bot implements Mediator {
             return this.datastore.getContractedOrders().values();
         else console.log('[Warning]:NOT_MATCHED');
     }
-    public async init() { await this.datastore.init() }
+    public async init() {
+        await this.datastore.init();
+        this.strategies.forEach(el => el.init(CONFIG.TRADE));
+    }
     public pushMessage(message: string) { pushMessage(message) }
     public async main() {
         if (
@@ -92,15 +103,26 @@ export class Bot implements Mediator {
         // this.setActiveOrders();//FOR TEST
         await this.setOHLCV();
         await this.updateStatus();
-        this.exeStrategy()
+        await this.updatePosition();
+        this.execute()
         await this.order()
         await this.cancel()
+        await this.saveToDb();
         const contractedOrders = [...this.getDatastore().getContractedOrders().values()];
         this.getDatastore().getContractedOrders().clear()
-        await this.saveToDb();
         return contractedOrders;
     }
     public async saveToDb() { await this.datastore.saveToDb() }
+    public async start(): Promise<void> {
+        await this.init();
+        // await this.main();
+        this.timer = setInterval(async () => await this.main(), Number(CONFIG.INTERVAL));
+    }
+    public async stop(): Promise<void> {
+        if (this.timer) {
+            clearInterval(this.timer);
+        }
+    }
     public setExchange(ExchangeAPI: new () => AbstractExchange): void {
         this.exchangeapi = new ExchangeAPI()
     }

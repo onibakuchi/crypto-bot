@@ -1,13 +1,12 @@
 import { ExchangeRepositoryFactory } from '../exchanges/exchanges';
-import { repeat } from '../utils/repeat';
-import { addCryptoFiatCalculator, logger, requestFiatRate, Template } from './arb';
+import { addCryptoFiatCalculator, ArbObjects, logger, requestFiatRate, Template } from './arb';
 import { pushMessage } from '../notif/line';
+import { record } from './record';
 import CONFIG from '../config/config';
 
-const TIMEOUT = Number(process.env.TIMEOUT) || 3600 * 1000;
-const expiration = Date.now() + TIMEOUT;
 const target = 'USDJPY';
 const symbols = ['BTC', 'ETH', 'XRP'];
+const column = ['BTC', 'XRP'];
 
 const ftx = ExchangeRepositoryFactory.get('ftx');
 const bb = ExchangeRepositoryFactory.get('bitbank');
@@ -26,7 +25,7 @@ const template: Template = {
     sendFeeCrypto: 0,
     fiatOtherFee: 0
 }
-export const fiatCryptoArb = async () => {
+export const fiatCryptoArb = async (): Promise<ArbObjects> => {
     try {
         const tckFtx = await ftx.fetchTickers(symbols.map(el => el + '/USD'))
         const tckBb = await bb.fetchTickers(symbols.map(el => el + '/JPY'));
@@ -41,11 +40,16 @@ export const fiatCryptoArb = async () => {
         addCryptoFiatCalculator(arbData);
         // console.log('arbData :>> ', arbData);
         logger(arbData, true, Number(CONFIG.ARB.FIAT_BASIS));
+        return arbData;
     }
     catch (e) {
         await pushMessage(e.message)
         console.log('[ERROR]:', e);
     }
+}
+
+export const recordFiatArb = async (range: string,column: any[]) => {
+    await record(fiatCryptoArb, range, column);
 }
 
 const makeArbObj = (tckAbroad, tckJapan, symbol: string) => {
@@ -56,8 +60,7 @@ const makeArbObj = (tckAbroad, tckJapan, symbol: string) => {
     return arbObj
 }
 
-
-if (require.main != module) {
-    repeat(fiatCryptoArb, 120, expiration)
+if (require.main == module) {
+    fiatCryptoArb();
 }
 

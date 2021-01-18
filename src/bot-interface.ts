@@ -1,5 +1,5 @@
-import { DatastoreInterface, Order } from "../datastore/datastore-interface";
-import { pushMessage } from '../notif/line';
+import { DatastoreInterface, Order } from "./datastore/datastore-interface";
+import { pushMessage } from './notif/line';
 
 export abstract class BaseComponent {
     protected mediator: Mediator;
@@ -22,10 +22,13 @@ export interface Mediator {
     init(): Promise<void>;
     main(): Promise<Order[]>;
     saveToDb(): void;
+    start(): Promise<void>;
+    stop(): Promise<void>;
     setDatastore(Datastore: new () => DatastoreInterface): void;
 }
 
 export abstract class BaseStrategy extends BaseComponent {
+    public abstract init(TRADE: { MODE: string; SYMBOL: string; MAX_ACTIVE_ORDERS: string; MAX_LEVERAGE: string; PYRAMIDING: string; TIMEFRAME: string; }): void
     public abstract strategy(): Order[]
 }
 

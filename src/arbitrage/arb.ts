@@ -83,10 +83,12 @@ export const addCryptoFiatCalculator = (tickers: { [symbol: string]: Template })
         },
         totalMoney: function () { return this.targetCryptoJPY * this.quantity },
         profit: function () {
-            return this.quantity * (Math.abs(this.diffPercent() - 100) * this.targetCryptoJPY - this.tradeFeePercent * this.targetCryptoJPY) / 100 - this.sendFeeCrypto * this.targetCryptoJPY - this.fiatOtherFee;
+            const pureProfit = this.quantity * (Math.abs(this.diffPercent() - 100) * this.targetCryptoJPY - this.tradeFeePercent * this.targetCryptoJPY) / 100;
+            const fee = this.sendFeeCrypto * this.targetCryptoJPY - this.fiatOtherFee;
+            return pureProfit - fee;
         },
         expectedReturn: function () {
-            return this.profit() / this.totalMoney();
+            return 100 * this.profit() / this.totalMoney();
         },
         totalFee: function () {
             return this.tradeFeePercent * this.targetCryptoJPY + this.sendFeeCrypto * this.targetCryptoJPY + (this.fiatOtherFee ?? 0);
@@ -106,16 +108,16 @@ export const logger = async (dataset: ArbObjects, push: Boolean, basis: number) 
     for (const key in dataset) {
         if (Object.prototype.hasOwnProperty.call(dataset, key)) {
             const el = dataset[key];
-            const option = el.usdJpyFromCrypto ? `換算USDJPY:${el.usdJpyFromCrypto}\n` : ``;
+            const option = el.usdJpyFromCrypto ? `換算USDJPY:${el.usdJpyFromCrypto?.toFixed(2)}\n` : ``;
             const message = `ベース通貨:${el.baseCrypto}\n`
                 + `ターゲット通貨:${el.targetCrypto}\n`
                 + `国外/国内比率 %:${el.diffPercent()?.toFixed(3)}\n`
                 + `鞘 %:${(100 - el.diffPercent())?.toFixed(3)}\n`
-                + `粗利益 ¥:${el.profit().toFixed(1)}\n`
+                + `利益 ¥:${el.profit().toFixed(1)}\n`
                 + `収益率 %:${el.expectedReturn()?.toFixed(3)}\n`
                 + `ターゲットJPY建 ¥:${el.targetCryptoJPY}\n`
                 + `ターゲットUSD建 $:${el.targetCryptoUSD}\n`
-                + `USDJPY:${el.usdjpy}\n`
+                + `USDJPY:${el.usdjpy?.toFixed(2)}\n`
                 + option
                 + `裁定金額 ¥:${el.totalMoney().toFixed(0)}\n`
                 + `取引量:${el.quantity.toFixed(3)}\n`
@@ -130,8 +132,15 @@ export const logger = async (dataset: ArbObjects, push: Boolean, basis: number) 
 }
 
 export const requestFiatRate = async (base: string, target: string): Promise<any> => {
-    const rate = (await axiosBase.get('https://api.exchangeratesapi.io/latest?base=' + base.toUpperCase())).data.rates[target.toUpperCase()]
+    // const rate = (await axiosBase.get('https://api.exchangeratesapi.io/latest?base=' + base.toUpperCase())).data.rates[target.toUpperCase()]
     // https://www.freeforexapi.com/api/live?pairs=USDJPY
-    console.log(`${base.toUpperCase()}/${target.toUpperCase()}:${rate?.toFixed(3)}`);
-    return rate;
+    // http://www.gaitameonline.com/rateaj/getrate
+    const data = (await axiosBase.get('http://www.gaitameonline.com/rateaj/getrate')).data
+    for (const rate of data.quotes) {
+        if (rate.currencyPairCode == `${base}${target}`.toUpperCase()) {
+            console.log('rate :>> ', (Number(rate.ask) + Number(rate.bid)) / 2);
+            return (Number(rate.ask) + Number(rate.bid)) / 2
+        }
+    }
+    // console.log(`${base.toUpperCase()}/${target.toUpperCase()}:${rate?.toFixed(3)}`);
 }

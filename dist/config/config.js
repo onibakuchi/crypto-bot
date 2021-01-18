@@ -1,5 +1,7 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 let CONFIG;
-export default CONFIG = {
+exports.default = CONFIG = {
     "BITBANK": {
         "APIKEY": process.env.BB_APIKEY,
         "APISECRET": process.env.BB_APISECRET
@@ -58,4 +60,4 @@ export default CONFIG = {
         "FIAT_ARB_RANGE": process.env.FIAT_ARB_RANGE,
         "XRP_ARB_RANGE": process.env.XRP_ARB_RANGE
     }
-}
+};
